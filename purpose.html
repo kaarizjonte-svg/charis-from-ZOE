@@ -1,0 +1,3794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Challenges & Solutions</title>
+<meta name="description" content="A creative platform identifying pressing global challenges — from climate change to inequality — and using design, video, and storytelling to visualize solutions and inspire action.">
+<meta property="og:title" content="Global Challenges & Solutions">
+<meta property="og:description" content="Design, video, and storytelling for a better world — explore the challenges we're tackling and the solutions we're building.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%8D%3C/text%3E%3C/svg%3E">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f5f0;
+    --text: #1c1c1c;
+    --text-light: #6b6a66;
+    --accent: #2a724e;
+    --accent2: #6a0d50;
+    --red: #b0193a;
+    --green: #2a724e;
+    --warm: #0d84a8;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Visible focus ring for keyboard navigation — mouse users don't see it */
+  button:focus-visible, a:focus-visible, input:focus-visible,
+  textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ─── LOADER ─── */
+  #loader {
+    position: fixed; inset: 0; z-index: 10000;
+    background: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+    transition: opacity 0.8s, visibility 0.8s;
+  }
+  #loader.hidden { opacity: 0; visibility: hidden; }
+  #loader h2 { color: var(--bg); font-family: 'Playfair Display'; font-size: 28px; letter-spacing: 2px; }
+  .loader-bar { width: 200px; height: 2px; background: #333; border-radius: 2px; overflow: hidden; }
+  .loader-fill { height: 100%; width: 0; background: var(--accent); transition: width 0.3s; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 24px 32px;
+    background: transparent;
+    mix-blend-mode: normal;
+    pointer-events: none;
+  }
+  nav > * { pointer-events: all; }
+  .nav-left h1 { font-family: 'Playfair Display'; font-size: 16px; font-weight: 500; line-height: 1.4; color: var(--text); }
+  .nav-left span { font-size: 12px; color: var(--text-light); font-weight: 300; letter-spacing: 1px; text-transform: uppercase; }
+  .nav-center { display: flex; gap: 20px; align-items: center; margin-top: 4px; }
+  .nav-center a {
+    font-size: 13px; color: var(--text); text-decoration: none;
+    letter-spacing: 0.5px; transition: color 0.3s; font-weight: 400;
+  }
+  .nav-center a:hover { color: var(--accent); }
+  .nav-right { display: flex; gap: 16px; align-items: center; margin-top: 4px; }
+  .nav-btn {
+    font-size: 13px; color: var(--text); text-decoration: none; cursor: pointer;
+    background: none; border: none; font-family: inherit; letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+  .nav-btn:hover { color: var(--accent); }
+
+  /* ─── 3D CANVAS ─── */
+  #canvas3d {
+    position: fixed; inset: 0; z-index: 1;
+  }
+
+  /* ─── CONTENT OVERLAY ─── */
+  #content {
+    position: relative; z-index: 2;
+    pointer-events: none;
+  }
+  #content > section { pointer-events: all; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 120px 32px 60px;
+    position: relative;
+  }
+  .hero-tag {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 20px; font-weight: 500;
+  }
+  .hero h2 {
+    font-family: 'Playfair Display'; font-size: clamp(36px, 6vw, 72px);
+    font-weight: 500; line-height: 1.15; max-width: 800px; margin-bottom: 24px;
+    color: var(--text);
+  }
+  .hero p {
+    font-size: 16px; color: var(--text-light); max-width: 520px;
+    line-height: 1.7; font-weight: 300;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 40px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light);
+  }
+  .scroll-line { width: 1px; height: 40px; background: var(--text-light); animation: scrollPulse 2s infinite; }
+  @keyframes scrollPulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  /* ─── ARROWS ─── */
+  .nav-arrows {
+    position: fixed; top: 50%; z-index: 100;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column;
+  }
+  .arrow-left { left: 20px; }
+  .arrow-right { right: 20px; }
+  .arrow-btn {
+    width: 44px; height: 44px; border: none; background: transparent;
+    cursor: pointer; font-size: 24px; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s, color 0.3s;
+  }
+  .arrow-btn:hover { color: var(--accent); transform: scale(1.2); }
+
+  /* ─── BOOK SECTION ─── */
+  .book-section {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 80px 32px;
+    position: relative;
+  }
+  .book-title {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 30px; font-weight: 500;
+  }
+  .book-container {
+    width: min(90vw, 900px); aspect-ratio: 1.5; position: relative;
+    perspective: 2000px; cursor: grab;
+  }
+  .book-container:active { cursor: grabbing; }
+  .book-spread {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 4px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 20px rgba(0,0,0,0.1);
+  }
+  .book-page {
+    position: absolute; inset: 0; display: none;
+    background: white; border-radius: 4px; overflow: hidden;
+  }
+  .book-page.active { display: flex; }
+  .book-page-left, .book-page-right {
+    flex: 1; padding: 40px; display: flex; flex-direction: column;
+    justify-content: center; position: relative;
+  }
+  .book-page-left { border-right: 1px solid #eee; }
+  .book-spine {
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    transform: translateX(-50%); width: 6px; z-index: 10;
+    background: linear-gradient(90deg, #ddd, #fff, #ddd);
+  }
+  .page-number {
+    position: absolute; bottom: 16px; font-size: 11px;
+    color: #bbb; letter-spacing: 1px;
+  }
+  .page-number.left { left: 40px; }
+  .page-number.right { right: 40px; }
+  .page-visual {
+    width: 100%; flex: 1; border-radius: 4px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .page-visual canvas { width: 100% !important; height: 100% !important; border-radius: 4px; }
+  .page-category {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px; font-weight: 600;
+  }
+  .page-heading {
+    font-family: 'Playfair Display'; font-size: clamp(20px, 2.5vw, 32px);
+    font-weight: 500; line-height: 1.3; margin-bottom: 16px;
+    color: #1c1c1c;
+  }
+  .page-text {
+    font-size: 13px; color: var(--text-light); line-height: 1.8;
+    font-weight: 300;
+  }
+  .page-stat {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;
+    display: flex; gap: 24px;
+  }
+  .stat-item h4 {
+    font-family: 'Playfair Display'; font-size: 28px; font-weight: 500;
+    color: var(--accent);
+  }
+  .stat-item span { font-size: 11px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
+  .book-nav {
+    display: flex; gap: 16px; margin-top: 24px; align-items: center;
+  }
+  .book-nav-btn {
+    width: 40px; height: 40px; border: 1px solid #ddd; background: white;
+    border-radius: 50%; cursor: pointer; font-size: 16px; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .book-nav-btn:hover { background: var(--text); color: white; border-color: var(--text); }
+  .book-counter { font-size: 12px; color: var(--text-light); letter-spacing: 1px; }
+
+  /* ─── SOLUTIONS GRID ─── */
+  .solutions-section {
+    min-height: 100vh; padding: 100px 32px;
+  }
+  .section-header {
+    text-align: center; margin-bottom: 60px;
+  }
+  .section-header h3 {
+    font-family: 'Playfair Display'; font-size: clamp(28px, 4vw, 48px);
+    font-weight: 500; margin-bottom: 12px; color: var(--text);
+  }
+  .section-header p { font-size: 14px; color: var(--text-light); font-weight: 300; }
+  .solutions-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px; max-width: 1100px; margin: 0 auto;
+  }
+  .solution-card {
+    background: white; border-radius: 8px; padding: 32px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+    transition: transform 0.4s, box-shadow 0.4s;
+    cursor: pointer; position: relative; overflow: hidden;
+  }
+  .solution-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent); transform: scaleX(0); transition: transform 0.4s;
+    transform-origin: left;
+  }
+  .solution-card:hover { transform: translateY(-4px); box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
+  .solution-card:hover::before { transform: scaleX(1); }
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 20px;
+  }
+  .solution-card h4 {
+    font-family: 'Playfair Display'; font-size: 20px; font-weight: 500;
+    margin-bottom: 10px; color: #1c1c1c;
+  }
+  .solution-card p { font-size: 13px; color: var(--text-light); line-height: 1.7; font-weight: 300; }
+  .card-tag {
+    display: inline-block; margin-top: 16px; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--accent);
+    font-weight: 600; padding: 4px 10px; background: rgba(42,114,78,0.08);
+    border-radius: 4px;
+  }
+
+  /* ─── SOLUTION CARD MEDIA ─── */
+  .card-media {
+    margin-top: 18px; border-radius: 8px; overflow: hidden;
+    border: 1px solid #eee; background: #fafafa;
+  }
+  .card-media img { width: 100%; display: block; max-height: 220px; object-fit: cover; }
+  .card-media video { width: 100%; display: block; max-height: 220px; }
+  .card-media iframe { width: 100%; aspect-ratio: 16/9; display: block; border: none; }
+  .card-media canvas { width: 100%; display: block; }
+  .card-doc-link {
+    display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+    text-decoration: none; color: var(--text); font-size: 13px; font-weight: 500;
+  }
+  .card-doc-link:hover { color: var(--accent); }
+  .card-doc-link .doc-icon { font-size: 20px; }
+  .media-caption {
+    padding: 10px 12px; font-size: 12px; color: var(--text-light);
+    background: white; border-top: 1px solid #eee;
+  }
+  .gallery-count-badge {
+    position: absolute; bottom: 10px; right: 10px; z-index: 3;
+    background: rgba(0,0,0,0.65); color: white; font-size: 10px; font-weight: 600;
+    letter-spacing: 0.5px; padding: 4px 10px; border-radius: 20px;
+  }
+  .detail-gallery { display: flex; flex-direction: column; gap: 18px; }
+
+  /* ─── ADMIN MEDIA CONTROLS ─── */
+  .media-type-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .media-type-btn {
+    padding: 7px 14px; border: 1px solid #ddd; background: white; border-radius: 20px;
+    cursor: pointer; font-size: 12px; font-family: inherit; color: #1c1c1c;
+    transition: all 0.25s;
+  }
+  .media-type-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .media-fields { display: none; padding: 14px; background: white; border-radius: 8px; border: 1px dashed #ddd; margin-bottom: 4px; }
+  .media-fields.active { display: block; }
+  .file-drop {
+    border: 1.5px dashed #ccc; border-radius: 8px; padding: 20px; text-align: center;
+    font-size: 12px; color: var(--text-light); cursor: pointer; transition: border-color 0.25s;
+  }
+  .file-drop:hover { border-color: var(--accent); }
+  .file-drop.has-file { border-color: var(--accent); color: var(--accent); }
+  .video-mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+  .chart-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .chart-row { display: flex; gap: 8px; align-items: center; }
+  .chart-row input { flex: 1; }
+  .chart-row .mini-btn { flex-shrink: 0; }
+  .upload-hint { font-size: 11px; color: var(--text-light); margin-top: 6px; }
+
+  /* ─── SOLUTION DETAIL MODAL ─── */
+  .solution-detail-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.35s; padding: 24px;
+  }
+  .solution-detail-overlay.open { display: flex; opacity: 1; }
+  .solution-detail-panel {
+    width: min(92vw, 640px); max-height: 88vh; overflow-y: auto;
+    background: white; border-radius: 14px; padding: 40px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.25); position: relative;
+  }
+  .solution-detail-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 34px; height: 34px; border: none; background: #f5f5f5;
+    border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+  }
+  .solution-detail-close:hover { background: #e0e0e0; }
+  .solution-detail-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin-bottom: 20px;
+  }
+  .solution-detail-panel h3 {
+    font-family: 'Playfair Display'; font-size: 28px; font-weight: 500;
+    color: #1c1c1c; margin-bottom: 14px; padding-right: 30px;
+  }
+  .solution-detail-panel p.detail-desc { font-size: 14px; color: var(--text-light); line-height: 1.8; margin-bottom: 20px; }
+  .solution-detail-panel .card-media { margin-top: 0; margin-bottom: 20px; }
+  .solution-detail-panel .card-media img,
+  .solution-detail-panel .card-media video { max-height: 360px; }
+  .solution-detail-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  .solution-detail-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; background: var(--accent); color: white;
+    border-radius: 24px; text-decoration: none; font-size: 13px; font-weight: 500;
+    transition: background 0.3s;
+  }
+  .solution-detail-link:hover { background: var(--accent2); }
+
+  /* ─── CONTACT ─── */
+  .contact-section {
+    min-height: 80vh; padding: 100px 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .contact-inner {
+    text-align: center; max-width: 600px;
+  }
+  .contact-inner h3 {
+    font-family: 'Playfair Display'; font-size: clamp(28px, 4vw, 48px);
+    font-weight: 500; margin-bottom: 20px; color: var(--text);
+  }
+  .contact-inner p { font-size: 14px; color: var(--text-light); line-height: 1.7; margin-bottom: 32px; }
+  .contact-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .contact-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border: 1px solid #ddd; border-radius: 30px;
+    text-decoration: none; color: var(--text); font-size: 13px;
+    transition: all 0.3s; background: white;
+  }
+  .contact-link:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .contact-link svg { width: 18px; height: 18px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 40px 32px; text-align: center;
+    font-size: 12px; color: var(--text-light); letter-spacing: 1px;
+    border-top: 1px solid #ddd;
+  }
+
+  /* ─── ADMIN PANEL ─── */
+  .admin-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .admin-overlay.open { display: flex; opacity: 1; }
+  .admin-panel {
+    width: min(95vw, 800px); max-height: 85vh; background: white;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column;
+  }
+  .admin-header {
+    padding: 20px 24px; border-bottom: 1px solid #eee;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .admin-header h3 { font-family: 'Playfair Display'; font-size: 20px; color: #1c1c1c; }
+  .admin-close {
+    width: 32px; height: 32px; border: none; background: #f5f5f5;
+    border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+  }
+  .admin-close:hover { background: #e0e0e0; }
+  .admin-body {
+    padding: 24px; overflow-y: auto; flex: 1;
+  }
+  .admin-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: #f5f5f5; border-radius: 8px; padding: 4px; flex-wrap: wrap; }
+  .admin-tab {
+    flex: 1; padding: 10px 16px; border: none; background: transparent;
+    border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit;
+    letter-spacing: 0.5px; transition: all 0.3s; font-weight: 500; color: #1c1c1c;
+    min-width: 90px;
+  }
+  .admin-tab.active { background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.1); color: var(--accent); }
+  .admin-tab-content { display: none; }
+  .admin-tab-content.active { display: block; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; font-weight: 500;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px;
+    font-family: inherit; font-size: 13px; transition: border-color 0.3s;
+    background: #fafafa; color: #1c1c1c;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline: none; border-color: var(--accent); background: white;
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .admin-btn {
+    padding: 10px 24px; background: var(--accent); color: white;
+    border: none; border-radius: 8px; cursor: pointer; font-family: inherit;
+    font-size: 13px; font-weight: 500; transition: all 0.3s;
+  }
+  .admin-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .admin-btn.secondary { background: #f5f5f5; color: #1c1c1c; }
+  .admin-btn.secondary:hover { background: #e8e8e8; }
+  .admin-btn.danger { background: var(--red); }
+  .admin-btn.danger:hover { background: #8f1430; }
+  .admin-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+  .item-list { display: flex; flex-direction: column; gap: 10px; }
+  .item-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; background: #fafafa; border-radius: 8px;
+    border: 1px solid #eee;
+  }
+  .item-row .item-info { flex: 1; }
+  .item-row .item-info h5 { font-size: 14px; font-weight: 500; margin-bottom: 2px; color: #1c1c1c; }
+  .item-row .item-info span { font-size: 11px; color: var(--text-light); }
+  .item-row .item-actions { display: flex; gap: 6px; }
+  .mini-btn {
+    width: 28px; height: 28px; border: 1px solid #ddd; background: white;
+    border-radius: 6px; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mini-btn.delete:hover { border-color: var(--red); color: var(--red); }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card {
+    padding: 20px; background: #fafafa; border-radius: 8px; border: 1px solid #eee;
+    text-align: center;
+  }
+  .stat-card h4 { font-family: 'Playfair Display'; font-size: 28px; color: var(--accent); }
+  .stat-card span { font-size: 11px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
+
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1c1c1c; color: white; padding: 12px 24px;
+    border-radius: 8px; font-size: 13px; z-index: 99999;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── INFO PANEL ─── */
+  .info-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .info-overlay.open { display: flex; opacity: 1; }
+  .info-panel {
+    width: min(90vw, 500px); background: white; border-radius: 12px;
+    padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .info-panel h3 {
+    font-family: 'Playfair Display'; font-size: 24px; margin-bottom: 16px; color: #1c1c1c;
+  }
+  .info-panel p { font-size: 13px; color: var(--text-light); line-height: 1.8; margin-bottom: 12px; }
+  .info-close {
+    margin-top: 20px; padding: 10px 24px; background: #1c1c1c; color: white;
+    border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit;
+  }
+
+  /* ─── ADMIN LOGIN ─── */
+  .admin-login-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .admin-login-overlay.open { display: flex; opacity: 1; }
+
+  /* ─── USER NAV BUTTON ─── */
+  .user-nav-btn {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text); background: none; border: none;
+    cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+  .user-nav-btn:hover { color: var(--accent); }
+  .user-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+
+  /* ─── AUTH TABS (login/signup) ─── */
+  .auth-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #f5f5f5; border-radius: 8px; padding: 4px; }
+  .auth-tab {
+    flex: 1; padding: 9px 14px; border: none; background: transparent;
+    border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit;
+    letter-spacing: 0.5px; transition: all 0.3s; font-weight: 500; color: #1c1c1c;
+  }
+  .auth-tab.active { background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.1); color: var(--accent); }
+  .auth-tab-content { display: none; }
+  .auth-tab-content.active { display: block; }
+  .auth-hint { font-size: 12px; color: var(--text-light); margin-top: 10px; text-align: center; }
+
+  /* ─── FAVORITE HEART ─── */
+  .fav-btn {
+    position: absolute; top: 14px; right: 14px; z-index: 5;
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.85); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.25s, background 0.25s; color: #999;
+    backdrop-filter: blur(4px);
+  }
+  .fav-btn:hover { transform: scale(1.12); }
+  .fav-btn.active { color: var(--red); }
+
+  .status-pill {
+    display: inline-block; font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  }
+  .status-pill.pending { background: #fff3cd; color: #8a6300; }
+  .status-pill.approved { background: #d7f0e0; color: var(--accent); }
+  .status-pill.rejected { background: #fbdadf; color: var(--red); }
+
+  .empty-state {
+    text-align: center; padding: 30px 16px; color: var(--text-light); font-size: 13px;
+  }
+
+  /* ─── SPHERE EXPLORER ─── */
+  .sphere-intro {
+    font-size: 12px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px;
+  }
+  .sphere-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .sphere-card {
+    padding: 16px 10px; background: #fafafa; border: 1px solid #eee; border-radius: 10px;
+    cursor: pointer; text-align: center; transition: all 0.25s;
+  }
+  .sphere-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .sphere-card.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .sphere-card .sphere-icon { font-size: 24px; margin-bottom: 8px; }
+  .sphere-card h5 { font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; line-height: 1.3; }
+  .sphere-detail-box {
+    padding: 14px 16px; background: #fafafa; border: 1px solid #eee; border-radius: 8px;
+    margin-top: 18px; margin-bottom: 14px;
+  }
+  .sphere-detail-box strong { font-size: 13px; }
+  .sphere-detail-box p { font-size: 12px; color: var(--text-light); margin-top: 4px; line-height: 1.6; }
+
+  /* ─── IDEA BOARD ─── */
+  .idea-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .idea-filters select {
+    padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-family: inherit; font-size: 12px; background: #fafafa; color: #1c1c1c;
+  }
+  .idea-card {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 10px;
+  }
+  .idea-vote {
+    flex-shrink: 0; width: 52px; padding: 8px 0; border: 1px solid #ddd;
+    background: white; border-radius: 10px; cursor: pointer; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: all 0.25s; color: var(--text);
+  }
+  .idea-vote:hover { border-color: var(--accent); color: var(--accent); }
+  .idea-vote.voted { background: var(--accent); border-color: var(--accent); color: white; }
+  .idea-vote .vote-arrow { font-size: 12px; line-height: 1; }
+  .idea-vote .vote-count { font-size: 15px; font-weight: 600; line-height: 1.1; }
+  .idea-body { flex: 1; min-width: 0; }
+  .idea-body h5 { font-size: 14px; font-weight: 600; margin-bottom: 3px; color: #1c1c1c; }
+  .idea-meta { font-size: 11px; color: var(--text-light); }
+  .idea-body p { font-size: 12px; color: var(--text-light); line-height: 1.6; margin-top: 7px; }
+
+  /* ─── RESOURCES ─── */
+  .res-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .res-chip {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border: 1px solid #ddd; background: white; border-radius: 22px;
+    cursor: pointer; font-size: 12px; font-family: inherit; color: #1c1c1c;
+    transition: all 0.25s;
+  }
+  .res-chip:hover { border-color: var(--accent); }
+  .res-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .res-chip .res-icon { font-size: 14px; }
+  .res-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+  .res-legend-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 12px; color: var(--text-light); line-height: 1.6;
+  }
+  .res-legend-item strong { color: var(--text); font-weight: 600; }
+  .res-tag {
+    display: inline-block; font-size: 10px; letter-spacing: 0.5px;
+    padding: 3px 9px; border-radius: 20px; margin: 3px 4px 0 0;
+    background: rgba(42,114,78,0.08); color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── MOBILE MENU ─── */
+  .mobile-menu-btn {
+    display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 40px; height: 40px; border: none; background: rgba(255,255,255,0.85);
+    border-radius: 10px; cursor: pointer; pointer-events: all; backdrop-filter: blur(4px);
+  }
+  .mobile-menu-btn span {
+    display: block; width: 20px; height: 2px; background: var(--text); margin: 0 auto;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+  .mobile-menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .mobile-menu-btn.open span:nth-child(2) { opacity: 0; }
+  .mobile-menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .mobile-menu-panel {
+    position: fixed; top: 0; right: 0; z-index: 999;
+    width: min(78vw, 300px); height: 100vh; background: white;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column; gap: 4px; padding: 100px 28px 28px;
+    transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .mobile-menu-panel.open { transform: translateX(0); }
+  .mobile-menu-panel a, .mobile-menu-panel button {
+    text-align: left; padding: 14px 4px; border: none; background: none;
+    border-bottom: 1px solid #eee; font-size: 15px; color: var(--text);
+    text-decoration: none; font-family: inherit; cursor: pointer;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-center, .nav-right { display: none; }
+    .mobile-menu-btn { display: flex; }
+    .book-container { width: 95vw; }
+    .book-page-left, .book-page-right { padding: 20px; }
+    .form-row { grid-template-columns: 1fr; }
+    .solutions-grid { grid-template-columns: 1fr; }
+    .page-stat { flex-direction: column; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <h2>GLOBAL CHALLENGES & SOLUTIONS</h2>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-left">
+    <h1>Global Challenges<br>& Solutions</h1>
+    <span>Identifying · Solving · Impacting</span>
+  </div>
+  <div class="nav-center">
+    <a href="https://youtube.com/@globalchallengesandsolutions" target="_blank">YouTube</a>
+    <a href="https://instagram.com/globalchallengesandsolutions" target="_blank">Instagram</a>
+    <a href="mailto:globalchallengesandsolutions@gmail.com">Mail</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openInfo()">Information</button>
+    <button class="user-nav-btn" id="userNavBtn" onclick="handleUserNavClick()">Sign In</button>
+    <button class="nav-btn" onclick="openAdmin()">Admin</button>
+  </div>
+  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenuPanel">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU PANEL -->
+<div class="mobile-menu-panel" id="mobileMenuPanel">
+  <a href="https://youtube.com/@globalchallengesandsolutions" target="_blank">YouTube</a>
+  <a href="https://instagram.com/globalchallengesandsolutions" target="_blank">Instagram</a>
+  <a href="mailto:globalchallengesandsolutions@gmail.com">Mail</a>
+  <button class="nav-btn" onclick="openInfo(); closeMobileMenu();">Information</button>
+  <button class="nav-btn" onclick="handleUserNavClick(); closeMobileMenu();">Sign In / My Panel</button>
+  <button class="nav-btn" onclick="openAdmin(); closeMobileMenu();">Admin</button>
+</div>
+
+<!-- FIXED ARROWS -->
+<div class="nav-arrows arrow-left">
+  <button class="arrow-btn" onclick="prevPage()" title="Previous">←</button>
+</div>
+<div class="nav-arrows arrow-right">
+  <button class="arrow-btn" onclick="nextPage()" title="Next">→</button>
+</div>
+
+<!-- 3D CANVAS -->
+<canvas id="canvas3d"></canvas>
+
+<!-- CONTENT -->
+<div id="content">
+
+  <!-- HERO -->
+  <section class="hero" id="heroSection">
+    <div class="hero-tag">Identifying World Problems · Creating Solutions</div>
+    <h2>Design That Speaks<br>for the Planet</h2>
+    <p>We use graphic design, storytelling, and creative media to identify critical global challenges and craft actionable solutions for a better tomorrow.</p>
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      Scroll to explore
+    </div>
+  </section>
+
+  <!-- BOOK SECTION -->
+  <section class="book-section" id="bookSection">
+    <div class="book-title">Our Portfolio — World Problems & Solutions</div>
+    <div class="book-container" id="bookContainer">
+      <div class="book-spread" id="bookSpread">
+        <!-- Pages injected by JS -->
+      </div>
+    </div>
+    <div class="book-nav">
+      <button class="book-nav-btn" onclick="prevPage()" aria-label="Previous page">←</button>
+      <span class="book-counter" id="bookCounter">01 / 06</span>
+      <button class="book-nav-btn" onclick="nextPage()" aria-label="Next page">→</button>
+    </div>
+  </section>
+
+  <!-- SOLUTIONS GRID -->
+  <section class="solutions-section" id="solutionsSection">
+    <div class="section-header">
+      <div class="hero-tag">What We Do</div>
+      <h3>Solutions We Design</h3>
+      <p>Each challenge gets a creative, research-driven design response</p>
+    </div>
+    <div class="solutions-grid" id="solutionsGrid">
+      <!-- injected by JS -->
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact-section" id="contactSection">
+    <div class="contact-inner">
+      <div class="hero-tag">Get Involved</div>
+      <h3>Let's Solve Problems Together</h3>
+      <p>Reach out to collaborate, share ideas, or support global solutions through creative design and storytelling.</p>
+      <div class="contact-links">
+        <a class="contact-link" href="https://youtube.com/@globalchallengesandsolutions" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.5 31.5 0 000 12a31.5 31.5 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.5 31.5 0 0024 12a31.5 31.5 0 00-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+          YouTube
+        </a>
+        <a class="contact-link" href="https://instagram.com/globalchallengesandsolutions" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c2.7 0 3 0 4.1.1 1 0 1.7.2 2.3.4.6.2 1.1.6 1.6 1 .5.5.8 1 1 1.6.2.6.4 1.3.4 2.3 0 1.1.1 1.4.1 4.1s0 3-.1 4.1c0 1-.2 1.7-.4 2.3-.2.6-.6 1.1-1 1.6-.5.5-1 .8-1.6 1-.6.2-1.3.4-2.3.4-1.1 0-1.4.1-4.1.1s-3 0-4.1-.1c-1 0-1.7-.2-2.3-.4-.6-.2-1.1-.6-1.6-1-.5-.5-.8-1-1-1.6-.2-.6-.4-1.3-.4-2.3C2 15 2 14.7 2 12s0-3 .1-4.1c0-1 .2-1.7.4-2.3.2-.6.6-1.1 1-1.6.5-.5 1-.8 1.6-1C5.7 2.8 6.4 2.6 7.4 2.6 8.5 2.5 8.8 2.5 12 2.5zm0 2.2c-2.6 0-3 0-4 .1-.9 0-1.4.2-1.7.3-.4.2-.7.4-1 .7-.3.3-.5.6-.7 1-.1.3-.3.8-.3 1.7 0 1-.1 1.3-.1 4s0 3 .1 4c0 .9.2 1.4.3 1.7.2.4.4.7.7 1 .3.3.6.5 1 .7.3.1.8.3 1.7.3 1 0 1.3.1 4 .1s3 0 4-.1c.9 0 1.4-.2 1.7-.3.4-.2.7-.4 1-.7.3-.3.5-.6.7-1 .1-.3.3-.8.3-1.7 0-1 .1-1.3.1-4s0-3-.1-4c0-.9-.2-1.4-.3-1.7-.2-.4-.4-.7-.7-1-.3-.3-.6-.5-1-.7-.3-.1-.8-.3-1.7-.3-1 0-1.3-.1-4-.1zm0 3.8a4.5 4.5 0 110 9 4.5 4.5 0 010-9zm0 7.4a2.9 2.9 0 100-5.8 2.9 2.9 0 000 5.8zm5.7-7.6a1.1 1.1 0 11-2.2 0 1.1 1.1 0 012.2 0z"/></svg>
+          Instagram
+        </a>
+        <a class="contact-link" href="mailto:globalchallengesandsolutions@gmail.com">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          Email
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 Global Challenges & Solutions — Design for a Better World
+  </footer>
+</div>
+
+<!-- INFO OVERLAY -->
+<div class="info-overlay" id="infoOverlay" onclick="if(event.target===this)closeInfo()">
+  <div class="info-panel">
+    <h3>About This Project</h3>
+    <p>Global Challenges & Solutions is a creative platform that identifies pressing world problems — from climate change to inequality — and uses graphic design, video, and storytelling to visualize solutions and inspire action.</p>
+    <p>Founded with the belief that design can change the world, we partner with organizations, educators, and communities to make complex global issues accessible and actionable.</p>
+    <p><strong>YouTube:</strong> @globalchallengesandsolutions<br>
+    <strong>Instagram:</strong> @globalchallengesandsolutions<br>
+    <strong>Email:</strong> globalchallengesandsolutions@gmail.com</p>
+    <button class="info-close" onclick="closeInfo()">Close</button>
+  </div>
+</div>
+
+<!-- SOLUTION DETAIL MODAL -->
+<div class="solution-detail-overlay" id="solutionDetailOverlay" onclick="if(event.target===this)closeSolutionDetail()">
+  <div class="solution-detail-panel">
+    <button class="solution-detail-close" onclick="closeSolutionDetail()" aria-label="Close">✕</button>
+    <div class="solution-detail-icon" id="detailIcon"></div>
+    <h3 id="detailTitle"></h3>
+    <p class="detail-desc" id="detailDesc"></p>
+    <div id="detailMedia"></div>
+    <div class="solution-detail-actions" id="detailActions"></div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="admin-login-overlay" id="adminLoginOverlay" onclick="if(event.target===this)closeAdminLogin()">
+  <div class="info-panel" style="max-width:420px;">
+    <h3>Admin Login</h3>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="adminPasswordInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')attemptAdminLogin()">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="admin-btn secondary" onclick="closeAdminLogin()">Cancel</button>
+      <button class="admin-btn" onclick="attemptAdminLogin()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-overlay" id="adminOverlay" onclick="if(event.target===this)closeAdmin()">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <h3>Admin Panel</h3>
+      <button class="admin-close" onclick="closeAdmin()" aria-label="Close admin panel">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('dashboard', event)">Dashboard</button>
+        <button class="admin-tab" onclick="switchTab('projects', event)">Projects</button>
+        <button class="admin-tab" onclick="switchTab('submissions', event)">Submissions <span id="pendingBadge"></span></button>
+        <button class="admin-tab" onclick="switchTab('content', event)">Content</button>
+        <button class="admin-tab" onclick="switchTab('settings', event)">Settings</button>
+      </div>
+
+      <!-- DASHBOARD TAB -->
+      <div class="admin-tab-content active" id="tab-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><h4 id="statProjects">6</h4><span>Projects</span></div>
+          <div class="stat-card"><h4 id="statSolutions">6</h4><span>Solutions</span></div>
+          <div class="stat-card"><h4>3</h4><span>Platforms</span></div>
+          <div class="stat-card"><h4>∞</h4><span>Impact</span></div>
+        </div>
+        <h4 style="font-size:13px;margin-bottom:12px;font-weight:500">Recent Activity</h4>
+        <div class="item-list">
+          <div class="item-row">
+            <div class="item-info"><h5>Portfolio Updated</h5><span>Climate Change section revised</span></div>
+          </div>
+          <div class="item-row">
+            <div class="item-info"><h5>New Video Published</h5><span>Water Scarcity documentary on YouTube</span></div>
+          </div>
+          <div class="item-row">
+            <div class="item-info"><h5>Instagram Post</h5><span>Infographic on deforestation reached 5k views</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECTS TAB -->
+      <div class="admin-tab-content" id="tab-projects">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h4 style="font-size:14px;font-weight:500">Manage Projects</h4>
+          <button class="admin-btn" onclick="showAddProject()" style="font-size:12px;padding:8px 16px">+ Add Project</button>
+        </div>
+        <div class="item-list" id="projectList"></div>
+        <div id="addProjectForm" style="display:none;margin-top:16px;padding:20px;background:#fafafa;border-radius:8px;border:1px solid #eee">
+          <div class="form-row">
+            <div class="form-group"><label>Title</label><input id="projTitle" placeholder="Project title"></div>
+            <div class="form-group"><label>Category</label>
+              <select id="projCategory">
+                <option>Climate</option><option>Water</option><option>Health</option>
+                <option>Education</option><option>Poverty</option><option>Biodiversity</option>
+                <option>Energy</option><option>Peace</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Sphere of Impact</label>
+            <select id="projSphere">
+              <option value="">Unclassified</option>
+              <option value="personal">Personal</option>
+              <option value="family">Family</option>
+              <option value="social">Social</option>
+              <option value="educational">Educational</option>
+              <option value="economic">Economic</option>
+              <option value="political">Political / Governance</option>
+              <option value="environmental">Environmental</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Description</label><textarea id="projDesc" placeholder="Describe the problem and solution..."></textarea></div>
+          <div class="form-group">
+            <label>Resources Needed</label>
+            <div class="res-chips" id="projResources"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Stat Label</label><input id="projStatLabel" placeholder="e.g. People Affected"></div>
+            <div class="form-group"><label>Stat Value</label><input id="projStatValue" placeholder="e.g. 2.1B"></div>
+          </div>
+          <div class="admin-actions">
+            <button class="admin-btn" id="projSaveBtn" onclick="addProject()">Save Project</button>
+            <button class="admin-btn secondary" onclick="hideAddProject()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMISSIONS TAB -->
+      <div class="admin-tab-content" id="tab-submissions">
+        <h4 style="font-size:14px;font-weight:500;margin-bottom:12px">User-Submitted Ideas</h4>
+        <div class="item-list" id="adminSubmissionsList"></div>
+      </div>
+
+      <!-- CONTENT TAB -->
+      <div class="admin-tab-content" id="tab-content">
+        <div class="form-group">
+          <label>Hero Title</label>
+          <input id="heroTitleInput" value="Design That Speaks for the Planet">
+        </div>
+        <div class="form-group">
+          <label>Hero Subtitle</label>
+          <textarea id="heroSubInput">We use graphic design, storytelling, and creative media to identify critical global challenges and craft actionable solutions for a better tomorrow.</textarea>
+        </div>
+        <div class="form-group">
+          <label>Hero Tag</label>
+          <input id="heroTagInput" value="Identifying World Problems · Creating Solutions">
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" onclick="updateHeroContent()">Update Hero</button>
+        </div>
+        <hr style="margin:24px 0;border:none;border-top:1px solid #eee">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h4 style="font-size:14px;font-weight:500">Manage Solutions Cards</h4>
+          <button class="admin-btn" onclick="showAddSolution()" style="font-size:12px;padding:8px 16px">+ Add Solution</button>
+        </div>
+        <div class="item-list" id="solutionsList"></div>
+
+        <div id="addSolutionForm" style="display:none;margin-top:16px;padding:20px;background:#fafafa;border-radius:8px;border:1px solid #eee">
+          <div class="form-row">
+            <div class="form-group"><label>Icon (emoji)</label><input id="solIcon" placeholder="🎨" maxlength="4"></div>
+            <div class="form-group"><label>Tag</label><input id="solTag" placeholder="e.g. Design"></div>
+          </div>
+          <div class="form-group"><label>Title</label><input id="solTitle" placeholder="Solution title"></div>
+          <div class="form-group"><label>Description</label><textarea id="solDesc" placeholder="What this solution offers..."></textarea></div>
+
+          <label style="display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;font-weight:500">Media Gallery — upload as many items as you like</label>
+          <div class="item-list" id="stagedGalleryList" style="margin-bottom:14px"></div>
+
+          <div class="media-type-tabs">
+            <button type="button" class="media-type-btn active" data-media="photo" onclick="setMediaType('photo')">Photo</button>
+            <button type="button" class="media-type-btn" data-media="video" onclick="setMediaType('video')">Video</button>
+            <button type="button" class="media-type-btn" data-media="document" onclick="setMediaType('document')">Document</button>
+            <button type="button" class="media-type-btn" data-media="chart" onclick="setMediaType('chart')">Chart</button>
+          </div>
+
+          <div class="media-fields active" id="media-photo">
+            <div class="form-group"><label>Caption (optional)</label><input id="photoCaption" placeholder="e.g. Q3 awareness poster"></div>
+            <div class="file-drop" id="photoDrop" onclick="document.getElementById('photoFileInput').click()">Click to choose a photo (JPG/PNG, max 2MB)</div>
+            <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handleMediaFile(event,'photo')">
+          </div>
+
+          <div class="media-fields" id="media-video">
+            <div class="video-mode-toggle">
+              <button type="button" class="media-type-btn active" data-vmode="embed" onclick="setVideoMode('embed')">Embed URL</button>
+              <button type="button" class="media-type-btn" data-vmode="file" onclick="setVideoMode('file')">Upload File</button>
+            </div>
+            <div class="form-group"><label>Caption (optional)</label><input id="videoCaption" placeholder="e.g. Water Scarcity documentary, part 1"></div>
+            <div id="videoModeEmbed">
+              <div class="form-group"><label>YouTube or Vimeo URL</label><input id="solVideoUrl" placeholder="https://youtube.com/watch?v=..."></div>
+            </div>
+            <div id="videoModeFile" style="display:none">
+              <div class="file-drop" id="videoDrop" onclick="document.getElementById('videoFileInput').click()">Click to choose a video file (max 2MB — short clips only)</div>
+              <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="handleMediaFile(event,'video')">
+              <p class="upload-hint">Browser storage can't hold large videos — for anything longer than a few seconds, use an Embed URL instead.</p>
+            </div>
+          </div>
+
+          <div class="media-fields" id="media-document">
+            <div class="form-group"><label>Caption (optional)</label><input id="docCaption" placeholder="e.g. Impact Report 2026"></div>
+            <div class="file-drop" id="docDrop" onclick="document.getElementById('docFileInput').click()">Click to choose a document (PDF, max 2MB)</div>
+            <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleMediaFile(event,'document')">
+          </div>
+
+          <div class="media-fields" id="media-chart">
+            <div class="form-group"><label>Caption (optional)</label><input id="chartCaption" placeholder="e.g. Reach by platform"></div>
+            <div class="form-group"><label>Chart Type</label>
+              <select id="chartType">
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="pie">Pie</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Labels (comma-separated)</label><input id="chartLabels" placeholder="2022, 2023, 2024, 2025"></div>
+            <div class="form-group"><label>Values (comma-separated, numbers)</label><input id="chartValues" placeholder="12, 18, 27, 41"></div>
+          </div>
+
+          <div class="admin-actions">
+            <button class="admin-btn secondary" onclick="addStagedGalleryItem()">+ Add to Gallery</button>
+          </div>
+
+          <div class="admin-actions" style="margin-top:20px;padding-top:16px;border-top:1px solid #eee">
+            <button class="admin-btn" id="solSaveBtn" onclick="addSolution()">Save Solution</button>
+            <button class="admin-btn secondary" onclick="hideAddSolution()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="admin-tab-content" id="tab-settings">
+        <div class="form-group">
+          <label>Brand Name</label>
+          <input id="brandName" value="Global Challenges & Solutions">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>YouTube Handle</label>
+            <input id="ytHandle" value="@globalchallengesandsolutions">
+          </div>
+          <div class="form-group">
+            <label>Instagram Handle</label>
+            <input id="igHandle" value="@globalchallengesandsolutions">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Contact Email</label>
+          <input id="contactEmail" value="globalchallengesandsolutions@gmail.com">
+        </div>
+        <div class="form-group">
+          <label>Accent Color</label>
+          <input type="color" id="accentColor" value="#2a724e" style="height:40px;padding:4px">
+        </div>
+        <hr style="margin:24px 0;border:none;border-top:1px solid #eee">
+        <div class="form-group">
+          <label>Change Admin Password</label>
+          <input type="password" id="newAdminPassword" placeholder="Leave blank to keep current password">
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" onclick="saveSettings()">Save Settings</button>
+          <button class="admin-btn danger" onclick="resetSettings()">Reset Defaults</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- USER AUTH MODAL -->
+<div class="admin-login-overlay" id="userAuthOverlay" onclick="if(event.target===this)closeUserAuth()">
+  <div class="info-panel" style="max-width:420px;">
+    <h3 id="userAuthTitle">Welcome</h3>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login', event)">Log In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup', event)">Sign Up</button>
+    </div>
+
+    <div class="auth-tab-content active" id="auth-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Your password" onkeydown="if(event.key==='Enter')attemptLogin()">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="admin-btn secondary" onclick="closeUserAuth()">Cancel</button>
+        <button class="admin-btn" onclick="attemptLogin()">Log In</button>
+      </div>
+      <p class="auth-hint"><a href="#" class="auth-link" onclick="showForgotPassword(); return false;">Forgot your password?</a></p>
+    </div>
+
+    <div class="auth-tab-content" id="auth-forgot">
+      <p style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:14px">Enter the email you signed up with and we'll generate a reset code.</p>
+      <div id="forgotStep1">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="forgotEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')sendResetCode()">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button class="admin-btn secondary" onclick="backToLogin()">Back</button>
+          <button class="admin-btn" onclick="sendResetCode()">Send Reset Code</button>
+        </div>
+      </div>
+      <div id="forgotStep2" style="display:none">
+        <div class="reset-code-box" id="resetCodeBox"></div>
+        <div class="form-group">
+          <label>6-digit reset code</label>
+          <input type="text" id="resetCodeInput" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code">
+        </div>
+        <div class="form-group">
+          <label>New password</label>
+          <input type="password" id="resetNewPassword" placeholder="New password" oninput="updatePwHint('resetNewPassword','resetPwHint')">
+          <div class="pw-hint" id="resetPwHint"></div>
+        </div>
+        <div class="form-group">
+          <label>Confirm new password</label>
+          <input type="password" id="resetConfirmPassword" placeholder="Repeat new password" onkeydown="if(event.key==='Enter')confirmPasswordReset()">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button class="admin-btn secondary" onclick="backToLogin()">Cancel</button>
+          <button class="admin-btn" onclick="confirmPasswordReset()">Reset Password</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-tab-content" id="auth-signup">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="signupName" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Choose a password" oninput="updatePwHint('signupPassword','signupPwHint')" onkeydown="if(event.key==='Enter')attemptSignup()">
+        <div class="pw-hint" id="signupPwHint"></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="admin-btn secondary" onclick="closeUserAuth()">Cancel</button>
+        <button class="admin-btn" onclick="attemptSignup()">Create Account</button>
+      </div>
+      <p class="auth-hint">Accounts are stored in this browser only — this is a demo login, not a secure server-backed account.</p>
+    </div>
+  </div>
+</div>
+
+<!-- USER PANEL -->
+<div class="admin-overlay" id="userPanelOverlay" onclick="if(event.target===this)closeUserPanel()">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <h3 id="userPanelGreeting">My Panel</h3>
+      <button class="admin-close" onclick="closeUserPanel()" aria-label="Close my panel">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-usertab="explore" onclick="switchUserTab('explore')">Explore</button>
+        <button class="admin-tab" data-usertab="ideas" onclick="switchUserTab('ideas')">Idea Board</button>
+        <button class="admin-tab" data-usertab="resources" onclick="switchUserTab('resources')">Resources</button>
+        <button class="admin-tab" data-usertab="favorites" onclick="switchUserTab('favorites')">Favorites</button>
+        <button class="admin-tab" data-usertab="submit" onclick="switchUserTab('submit')">Submit an Idea</button>
+        <button class="admin-tab" data-usertab="mysubs" onclick="switchUserTab('mysubs')">My Submissions</button>
+        <button class="admin-tab" data-usertab="profile" onclick="switchUserTab('profile')">Profile</button>
+      </div>
+
+      <!-- EXPLORE SPHERES TAB -->
+      <div class="admin-tab-content active" id="usertab-explore">
+        <h4 style="font-size:14px;font-weight:500;margin-bottom:6px">Where do you want to make an impact?</h4>
+        <p class="sphere-intro">Pick a sphere below to see challenges tagged in that area, or jump straight to submitting your own idea for it.</p>
+        <div class="sphere-grid" id="sphereGrid"></div>
+        <div id="sphereResults"></div>
+      </div>
+
+      <!-- IDEA BOARD TAB -->
+      <div class="admin-tab-content" id="usertab-ideas">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+          <h4 style="font-size:14px;font-weight:500">Community Idea Board</h4>
+          <button class="admin-btn" onclick="switchUserTab('submit')" style="font-size:12px;padding:8px 16px">+ New Idea</button>
+        </div>
+        <p class="sphere-intro">Every idea people have submitted. Back the ones you'd like to see built — the most supported ideas get priority in review.</p>
+        <div class="idea-filters">
+          <select id="ideaFilterSphere" onchange="buildIdeaBoard()">
+            <option value="">All spheres</option>
+            <option value="personal">Personal</option>
+            <option value="family">Family</option>
+            <option value="social">Social</option>
+            <option value="educational">Educational</option>
+            <option value="economic">Economic</option>
+            <option value="political">Political / Governance</option>
+            <option value="environmental">Environmental</option>
+          </select>
+          <select id="ideaFilterResource" onchange="buildIdeaBoard()">
+            <option value="">Any resource</option>
+            <option value="human">Human</option>
+            <option value="financial">Financial</option>
+            <option value="material">Material</option>
+            <option value="info">Information</option>
+            <option value="tech">Technology</option>
+            <option value="time">Time</option>
+          </select>
+          <select id="ideaSort" onchange="buildIdeaBoard()">
+            <option value="votes">Most backed</option>
+            <option value="new">Newest</option>
+          </select>
+        </div>
+        <div class="item-list" id="ideaBoardList"></div>
+      </div>
+
+      <!-- RESOURCES TAB -->
+      <div class="admin-tab-content" id="usertab-resources">
+        <h4 style="font-size:14px;font-weight:500;margin-bottom:6px">What can you bring to the table?</h4>
+        <p class="sphere-intro">Select the resources you're able to contribute. We use this to match you with challenges where your support would go furthest.</p>
+        <div class="res-chips" id="myResources"></div>
+        <div class="admin-actions">
+          <button class="admin-btn" onclick="saveMyResources()">Save My Resources</button>
+        </div>
+        <hr style="margin:22px 0;border:none;border-top:1px solid #eee">
+        <h4 style="font-size:13px;font-weight:500;margin-bottom:4px">Resource types explained</h4>
+        <div id="resourceLegend"></div>
+      </div>
+
+      <!-- FAVORITES TAB -->
+      <div class="admin-tab-content" id="usertab-favorites">
+        <h4 style="font-size:14px;font-weight:500;margin-bottom:12px">Saved Challenges</h4>
+        <div class="item-list" id="favoritesList"></div>
+      </div>
+
+      <!-- SUBMIT IDEA TAB -->
+      <div class="admin-tab-content" id="usertab-submit">
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.6">Have a global challenge you'd like to see featured? Submit it below — our team reviews every idea before it's added to the portfolio.</p>
+        <div class="form-group"><label>Sphere of Impact</label>
+          <select id="subSphere">
+            <option value="">Select a sphere...</option>
+            <option value="personal">Personal</option>
+            <option value="family">Family</option>
+            <option value="social">Social</option>
+            <option value="educational">Educational</option>
+            <option value="economic">Economic</option>
+            <option value="political">Political / Governance</option>
+            <option value="environmental">Environmental</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Title</label><input id="subTitle" placeholder="e.g. Ocean Plastic Pollution"></div>
+          <div class="form-group"><label>Category</label>
+            <select id="subCategory">
+              <option>Climate</option><option>Water</option><option>Health</option>
+              <option>Education</option><option>Poverty</option><option>Biodiversity</option>
+              <option>Energy</option><option>Peace</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea id="subDesc" placeholder="Describe the problem and a possible solution..."></textarea></div>
+        <div class="form-group">
+          <label>Resources this would need</label>
+          <div class="res-chips" id="subResources"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Stat Label</label><input id="subStatLabel" placeholder="e.g. Tons of Plastic"></div>
+          <div class="form-group"><label>Stat Value</label><input id="subStatValue" placeholder="e.g. 8M/year"></div>
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" onclick="submitIdea()">Submit for Review</button>
+        </div>
+      </div>
+
+      <!-- MY SUBMISSIONS TAB -->
+      <div class="admin-tab-content" id="usertab-mysubs">
+        <h4 style="font-size:14px;font-weight:500;margin-bottom:12px">Your Submitted Ideas</h4>
+        <div class="item-list" id="mySubmissionsList"></div>
+      </div>
+
+      <!-- PROFILE TAB -->
+      <div class="admin-tab-content" id="usertab-profile">
+        <div class="form-group">
+          <label>Name</label>
+          <input id="profileName">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="profileEmail" disabled style="opacity:0.6">
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" onclick="saveProfile()">Save Changes</button>
+          <button class="admin-btn secondary" onclick="logOutUser()">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════════════
+//  SPHERES OF IMPACT
+//  A cross-cutting classification (separate from a project's display
+//  "category") that lets a visitor browse challenges by the kind of life
+//  or society-level problem they involve, regardless of subject matter.
+// ═══════════════════════════════════
+const SPHERES = [
+  { id: 'personal',      icon: '🧠', label: 'Personal',               desc: "Problems involving an individual's behavior, emotions, habits, goals, or decisions." },
+  { id: 'family',        icon: '🏠', label: 'Family',                 desc: 'Problems involving relationships, communication, responsibilities, conflicts, and family welfare.' },
+  { id: 'social',        icon: '🤝', label: 'Social',                 desc: 'Problems affecting relationships within communities, groups, and society.' },
+  { id: 'educational',   icon: '🎓', label: 'Educational',            desc: 'Problems related to learning, teaching, academic performance, school resources, and education systems.' },
+  { id: 'economic',      icon: '💰', label: 'Economic',               desc: 'Problems involving income, unemployment, poverty, business, production, and use of resources.' },
+  { id: 'political',     icon: '🏛️', label: 'Political / Governance', desc: 'Problems involving leadership, laws, public services, decision-making, and management of public resources.' },
+  { id: 'environmental', icon: '🌿', label: 'Environmental',          desc: 'Problems involving pollution, waste management, climate change, deforestation, water, and conservation.' },
+];
+const SPHERE_LABELS = Object.fromEntries(SPHERES.map(s => [s.id, s.label]));
+
+// ═══════════════════════════════════
+//  RESOURCES
+//  What it actually takes to move a challenge forward. Used two ways:
+//  a user can declare what they can contribute, and an idea/project can
+//  record what it needs — so the two can eventually be matched up.
+// ═══════════════════════════════════
+const RESOURCES = [
+  { id: 'human',     icon: '👥', label: 'Human',     desc: 'Skills, knowledge, experience, and teamwork.' },
+  { id: 'financial', icon: '💵', label: 'Financial', desc: 'Money, savings, investments, or funding.' },
+  { id: 'material',  icon: '🧰', label: 'Material',  desc: 'Equipment, raw materials, buildings, and tools.' },
+  { id: 'info',      icon: '📚', label: 'Information', desc: 'Research, data, and useful knowledge.' },
+  { id: 'tech',      icon: '💻', label: 'Technology', desc: 'Computers, internet, software, and other technological tools.' },
+  { id: 'time',      icon: '⏳', label: 'Time',      desc: 'Organizing available time effectively.' },
+];
+const RESOURCE_MAP = Object.fromEntries(RESOURCES.map(r => [r.id, r]));
+
+// Renders the resource list as toggleable chips inside a container.
+function renderResourceChips(containerId, selected = []) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = RESOURCES.map(r => `
+    <button type="button" class="res-chip${selected.includes(r.id) ? ' active' : ''}"
+            data-res="${r.id}" aria-pressed="${selected.includes(r.id)}"
+            onclick="toggleResourceChip(this)">
+      <span class="res-icon">${r.icon}</span> ${r.label}
+    </button>
+  `).join('');
+}
+function toggleResourceChip(btn) {
+  const on = btn.classList.toggle('active');
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+function getSelectedResources(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return [];
+  return Array.from(el.querySelectorAll('.res-chip.active')).map(b => b.dataset.res);
+}
+// Small read-only tags for showing a list of resources in a row/summary.
+function resourceTagsMarkup(ids) {
+  if (!ids || !ids.length) return '';
+  return ids.map(id => {
+    const r = RESOURCE_MAP[id];
+    return r ? `<span class="res-tag">${r.icon} ${r.label}</span>` : '';
+  }).join('');
+}
+function resourceLegendMarkup() {
+  return `<div class="res-legend">${RESOURCES.map(r => `
+    <div class="res-legend-item">
+      <span>${r.icon}</span>
+      <div><strong>${r.label} resources</strong> — ${r.desc}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+// ═══════════════════════════════════
+//  DATA
+// ═══════════════════════════════════
+const defaultProjectsData = [
+  {
+    category: "Climate Change",
+    sphere: "environmental",
+    resources: ["human","info","tech"],
+    title: "Rising Temperatures, Rising Action",
+    text: "Global temperatures have risen 1.1°C since pre-industrial times. Our visual campaigns make the invisible crisis visible — turning data into compelling design narratives that move audiences to demand policy change.",
+    stat1: { value: "1.1°C", label: "Temp Rise" },
+    stat2: { value: "2050", label: "Net Zero Goal" },
+    colors: [0x2a7fff, 0x0055cc, 0x1a4f99],
+  },
+  {
+    category: "Water Scarcity",
+    sphere: "environmental",
+    resources: ["financial","material","human"],
+    title: "Every Drop Counts — 2.2 Billion Without",
+    text: "2.2 billion people lack safely managed drinking water. Through documentary films and infographic campaigns, we bring attention to the communities most affected and spotlight innovative filtration and conservation solutions.",
+    stat1: { value: "2.2B", label: "People Affected" },
+    stat2: { value: "40%", label: "Water Waste" },
+    colors: [0x00b4d8, 0x0077b6, 0x023e8a],
+  },
+  {
+    category: "Deforestation",
+    sphere: "environmental",
+    resources: ["tech","info","time"],
+    title: "Designing for the Lungs of Earth",
+    text: "We lose 10 million hectares of forest yearly. Our design work partners with reforestation orgs to create powerful visual stories — from satellite data art to immersive AR experiences showing before & after deforestation impacts.",
+    stat1: { value: "10M", label: "Hectares/Year" },
+    stat2: { value: "80%", label: "Biodiversity Loss" },
+    colors: [0x2d6a4f, 0x40916c, 0x1b4332],
+  },
+  {
+    category: "Education Access",
+    sphere: "educational",
+    resources: ["human","tech","time"],
+    title: "Knowledge Knows No Borders",
+    text: "258 million children are out of school globally. We create free educational design resources, visual learning tools, and motion graphics that break language barriers and bring quality content to underserved communities.",
+    stat1: { value: "258M", label: "Out of School" },
+    stat2: { value: "12%", label: "Literacy Gap" },
+    colors: [0xf77f00, 0xe36414, 0xd4a574],
+  },
+  {
+    category: "Health & Pandemics",
+    sphere: "personal",
+    resources: ["info","human","tech"],
+    title: "Visualizing Health, Saving Lives",
+    text: "Misinformation kills. Our design campaigns for health organizations turn complex medical data into clear, accessible infographics and animations — from vaccine education to mental health awareness across cultures.",
+    stat1: { value: "5M+", label: "Lives Saved" },
+    stat2: { value: "190", label: "Countries Reached" },
+    colors: [0xe63946, 0xd62828, 0xa4133c],
+  },
+  {
+    category: "Poverty & Inequality",
+    sphere: "economic",
+    resources: ["financial","human","material"],
+    title: "Bridging the Gap by Design",
+    text: "700 million people live in extreme poverty. We design campaigns for microfinance orgs, create visual toolkits for grassroots movements, and produce video content highlighting scalable economic solutions.",
+    stat1: { value: "700M", label: "In Poverty" },
+    stat2: { value: "$1.90", label: "Poverty Line" },
+    colors: [0x7209b7, 0x560bad, 0x3a0ca3],
+  },
+];
+
+const PROJECTS_STORAGE_KEY = 'gcs_projects_v1';
+
+function loadProjectsData() {
+  try {
+    const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (!raw) return defaultProjectsData.map(p => ({ ...p }));
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('Stored projects data was not an array');
+    return parsed;
+  } catch (err) {
+    console.warn('Could not load saved projects — using defaults:', err);
+    return defaultProjectsData.map(p => ({ ...p }));
+  }
+}
+
+function persistProjectsData() {
+  try {
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projectsData));
+  } catch (err) {
+    console.warn('Could not save projects to this browser:', err);
+    showToast('Saved for now, but storage is full — this change won\'t survive a refresh.');
+  }
+}
+
+let projectsData = loadProjectsData();
+
+// ─── Standalone color helpers ───
+// These used to rely on THREE.Color, which meant a slow/blocked CDN load of
+// three.js could crash canvas drawing (page visuals, pie charts) and, by
+// extension, halt the rest of page setup. They're plain JS now so nothing
+// here depends on an external script loading successfully.
+function hexIntToRgb(hex) {
+  return { r: (hex >> 16) & 255, g: (hex >> 8) & 255, b: hex & 255 };
+}
+function hslToRgb(h, s, l) {
+  h = ((h % 1) + 1) % 1;
+  let r, g, b;
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+}
+
+const defaultSolutionsData = [
+  { icon: "🎨", title: "Visual Campaigns", desc: "Powerful infographics, posters, and social media content that translate complex global data into compelling visual stories.", tag: "Design", gallery: [] },
+  { icon: "🎬", title: "Documentary Films", desc: "Short-form documentaries published on YouTube spotlighting real communities, real problems, and real solutions.", tag: "Video", gallery: [] },
+  { icon: "📊", title: "Data Visualization", desc: "Interactive charts, maps, and dashboards that make global statistics accessible and actionable for policymakers.", tag: "Data", gallery: [] },
+  { icon: "📱", title: "Social Media Impact", desc: "Instagram campaigns with shareable carousel posts, reels, and stories designed to maximize awareness and engagement.", tag: "Social", gallery: [] },
+  { icon: "🌍", title: "AR Experiences", desc: "Augmented reality installations and mobile experiences that bring environmental data into the physical world.", tag: "Technology", gallery: [] },
+  { icon: "📚", title: "Educational Resources", desc: "Free downloadable visual learning materials, motion graphics, and toolkits for educators and NGOs worldwide.", tag: "Education", gallery: [] },
+];
+
+// ═══════════════════════════════════
+//  PERSISTENCE
+//  Solutions (including any admin-uploaded media) are saved to this
+//  browser's localStorage so they survive a page reload. This is still
+//  per-browser only — not a real database — but at least "edit, refresh,
+//  see it's gone" is no longer a way this can look broken.
+// ═══════════════════════════════════
+const SOLUTIONS_STORAGE_KEY = 'gcs_solutions_v1';
+
+function loadSolutionsData() {
+  try {
+    const raw = localStorage.getItem(SOLUTIONS_STORAGE_KEY);
+    if (!raw) return defaultSolutionsData.map(s => ({ ...s, gallery: [...s.gallery] }));
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('Stored solutions data was not an array');
+    return parsed;
+  } catch (err) {
+    console.warn('Could not load saved solutions — using defaults:', err);
+    return defaultSolutionsData.map(s => ({ ...s, gallery: [...s.gallery] }));
+  }
+}
+
+function persistSolutionsData() {
+  try {
+    localStorage.setItem(SOLUTIONS_STORAGE_KEY, JSON.stringify(solutionsData));
+  } catch (err) {
+    // Most likely a quota error from too much uploaded media (localStorage
+    // is typically capped around 5-10MB total). Don't lose the in-memory
+    // edit — just let the admin know it won't survive a refresh.
+    console.warn('Could not save solutions to this browser:', err);
+    showToast('Saved for now, but storage is full — this change won\'t survive a refresh. Try removing some media.');
+  }
+}
+
+let solutionsData = loadSolutionsData();
+
+// ═══════════════════════════════════
+//  THREE.JS BACKGROUND
+// ═══════════════════════════════════
+let scene, camera, renderer, particles, clock;
+let mouseX = 0, mouseY = 0;
+
+function initThree() {
+  // This background particle effect is decorative only. If the three.js CDN
+  // script is slow, blocked (ad blockers, corporate proxies), or offline,
+  // THREE won't be defined here — skip the effect instead of throwing, so
+  // the book, solution cards, and every button on the page still work.
+  if (typeof THREE === 'undefined') {
+    console.warn('three.js did not load — skipping the background particle effect.');
+    return;
+  }
+
+  const canvas = document.getElementById('canvas3d');
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 30;
+
+  renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  clock = new THREE.Clock();
+
+  // Particle field
+  const count = 2000;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = (Math.random() - 0.5) * 80;
+    pos[i * 3 + 1] = (Math.random() - 0.5) * 80;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 80;
+
+    const c = new THREE.Color();
+    c.setHSL(0.42 + Math.random() * 0.08, 0.5, 0.35 + Math.random() * 0.25);
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+    sizes[i] = Math.random() * 2 + 0.5;
+  }
+
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.15,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  particles = new THREE.Points(geo, mat);
+  scene.add(particles);
+
+  // Floating rings
+  for (let i = 0; i < 5; i++) {
+    const ringGeo = new THREE.TorusGeometry(3 + i * 2, 0.02, 16, 100);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color().setHSL(0.42 + i * 0.02, 0.45, 0.4),
+      transparent: true,
+      opacity: 0.12,
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.set(
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 10 - 5
+    );
+    ring.rotation.x = Math.random() * Math.PI;
+    ring.rotation.y = Math.random() * Math.PI;
+    ring.userData = { speed: 0.1 + Math.random() * 0.3, axis: Math.random() > 0.5 ? 'x' : 'y' };
+    scene.add(ring);
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  animate();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  if (particles) {
+    particles.rotation.y = t * 0.02 + mouseX * 0.1;
+    particles.rotation.x = t * 0.01 + mouseY * 0.05;
+
+    const pos = particles.geometry.attributes.position.array;
+    for (let i = 0; i < pos.length; i += 3) {
+      pos[i + 1] += Math.sin(t + pos[i] * 0.1) * 0.003;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+  }
+
+  scene.children.forEach(child => {
+    if (child.userData && child.userData.speed) {
+      child.rotation[child.userData.axis] += child.userData.speed * 0.005;
+    }
+  });
+
+  camera.position.x += (mouseX * 3 - camera.position.x) * 0.02;
+  camera.position.y += (-mouseY * 2 - camera.position.y) * 0.02;
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+}
+
+// ═══════════════════════════════════
+//  PAGE VISUALS (mini canvases)
+// ═══════════════════════════════════
+function createPageVisual(container, colorSet, index) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 500;
+  container.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return () => {}; // canvas 2D unsupported in this environment — skip decoration, don't crash
+
+  let frame = 0;
+  let rafId = null;
+
+  function drawVisual() {
+    frame++;
+    ctx.clearRect(0, 0, 400, 500);
+
+    // Gradient background
+    const c1 = hexIntToRgb(colorSet[0]);
+    const c2 = hexIntToRgb(colorSet[1]);
+    const c3 = hexIntToRgb(colorSet[2]);
+
+    const grad = ctx.createLinearGradient(0, 0, 400, 500);
+    grad.addColorStop(0, `rgb(${c1.r},${c1.g},${c1.b})`);
+    grad.addColorStop(0.5, `rgb(${c2.r},${c2.g},${c2.b})`);
+    grad.addColorStop(1, `rgb(${c3.r},${c3.g},${c3.b})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 400, 500);
+
+    // Silhouette figures
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    for (let i = 0; i < 5; i++) {
+      const x = 60 + i * 70;
+      const sway = Math.sin(frame * 0.015 + i * 0.8) * 5;
+      const h = 140 + Math.sin(i * 1.5) * 30;
+
+      // Body
+      ctx.beginPath();
+      ctx.ellipse(x + sway, 500 - h * 0.45, 20, h * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head
+      ctx.beginPath();
+      ctx.arc(x + sway, 500 - h * 0.9 - 14, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Raised arm for some
+      if (i === 2 || i === 4) {
+        ctx.save();
+        ctx.translate(x + sway + 12, 500 - h * 0.7);
+        ctx.rotate(-0.4 + Math.sin(frame * 0.02 + i) * 0.15);
+        ctx.fillRect(0, -40, 6, 45);
+        ctx.restore();
+      }
+    }
+
+    // Light rays from top
+    for (let i = 0; i < 6; i++) {
+      const rayX = 50 + i * 65 + Math.sin(frame * 0.008 + i) * 20;
+      const rayGrad = ctx.createLinearGradient(rayX, 0, rayX, 350);
+      rayGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+      rayGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = rayGrad;
+      ctx.beginPath();
+      ctx.moveTo(rayX - 15, 0);
+      ctx.lineTo(rayX + 15, 0);
+      ctx.lineTo(rayX + 40, 350);
+      ctx.lineTo(rayX - 40, 350);
+      ctx.fill();
+    }
+
+    // Grain / noise overlay
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    for (let i = 0; i < 200; i++) {
+      ctx.fillRect(Math.random() * 400, Math.random() * 500, 1, 1);
+    }
+
+    rafId = requestAnimationFrame(drawVisual);
+  }
+  drawVisual();
+  return () => { if (rafId) cancelAnimationFrame(rafId); };
+}
+
+// ═══════════════════════════════════
+//  BOOK
+// ═══════════════════════════════════
+let currentPage = 0;
+let pageVisualCleanups = [];
+
+function buildBook() {
+  const spread = document.getElementById('bookSpread');
+  spread.innerHTML = '';
+
+  // Stop any previously running mini-canvas animation loops before rebuilding
+  pageVisualCleanups.forEach(fn => fn());
+  pageVisualCleanups = [];
+
+  if (currentPage > projectsData.length - 1) {
+    currentPage = Math.max(0, projectsData.length - 1);
+  }
+
+  projectsData.forEach((proj, i) => {
+    const page = document.createElement('div');
+    page.className = `book-page${i === currentPage ? ' active' : ''}`;
+    page.dataset.index = i;
+    page.innerHTML = `
+      <div class="book-page-left">
+        <div class="page-visual" id="pageVis${i}">
+          <button class="fav-btn" id="favBtn${i}" onclick="toggleFavorite('${proj.title.replace(/'/g, "\\'")}')" title="Save this challenge">♥</button>
+        </div>
+        <span class="page-number left">${String(i * 2 + 1).padStart(2, '0')}</span>
+      </div>
+      <div class="book-spine"></div>
+      <div class="book-page-right">
+        <div class="page-category">${proj.category}</div>
+        <div class="page-heading">${proj.title}</div>
+        <div class="page-text">${proj.text}</div>
+        <div class="page-stat">
+          <div class="stat-item"><h4>${proj.stat1.value}</h4><span>${proj.stat1.label}</span></div>
+          <div class="stat-item"><h4>${proj.stat2.value}</h4><span>${proj.stat2.label}</span></div>
+        </div>
+        <span class="page-number right">${String(i * 2 + 2).padStart(2, '0')}</span>
+      </div>
+    `;
+    spread.appendChild(page);
+  });
+
+  // Initialize mini canvases (append as background layer behind the heart button)
+  // Wrapped per-item: a decorative drawing failure on one page must never
+  // stop the rest of the book (or whatever called buildBook) from working.
+  projectsData.forEach((proj, i) => {
+    try {
+      const container = document.getElementById(`pageVis${i}`);
+      if (container) pageVisualCleanups.push(createPageVisual(container, proj.colors, i));
+    } catch (err) {
+      console.warn(`Page visual ${i} failed to render:`, err);
+    }
+  });
+
+  refreshFavoriteButtons();
+  updateBookCounter();
+}
+
+function nextPage() {
+  if (currentPage < projectsData.length - 1) {
+    goToPage(currentPage + 1);
+  }
+}
+function prevPage() {
+  if (currentPage > 0) {
+    goToPage(currentPage - 1);
+  }
+}
+
+function goToPage(index) {
+  const pages = document.querySelectorAll('.book-page');
+  const spread = document.getElementById('bookSpread');
+
+  // Flip animation
+  const dir = index > currentPage ? -1 : 1;
+  spread.style.transform = `rotateY(${dir * 8}deg)`;
+
+  setTimeout(() => {
+    pages.forEach(p => p.classList.remove('active'));
+    pages[index].classList.add('active');
+    currentPage = index;
+    updateBookCounter();
+    spread.style.transform = 'rotateY(0deg)';
+  }, 300);
+}
+
+function updateBookCounter() {
+  const counter = document.getElementById('bookCounter');
+  if (counter) {
+    counter.textContent = `${String(currentPage + 1).padStart(2, '0')} / ${String(projectsData.length).padStart(2, '0')}`;
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') nextPage();
+  if (e.key === 'ArrowLeft') prevPage();
+  if (e.key === 'Escape') { closeAdmin(); closeInfo(); closeAdminLogin(); closeUserAuth(); closeUserPanel(); closeSolutionDetail(); closeMobileMenu(); }
+});
+
+// ═══════════════════════════════════
+//  SOLUTIONS GRID
+// ═══════════════════════════════════
+// Renders one gallery item's markup. `uid` must be unique across the whole
+// page for this render pass so chart canvases can be found and drawn.
+function renderGalleryItemMarkup(item, uid) {
+  if (item.type === 'photo') {
+    return `<div class="card-media">
+      <img src="${item.dataUrl}" alt="${(item.caption || '').replace(/"/g, '')}">
+      ${item.caption ? `<div class="media-caption">${item.caption}</div>` : ''}
+    </div>`;
+  }
+  if (item.type === 'video') {
+    const player = item.mode === 'embed' && item.embedUrl
+      ? `<iframe src="${item.embedUrl}" allowfullscreen loading="lazy"></iframe>`
+      : item.mode === 'file' && item.dataUrl
+        ? `<video src="${item.dataUrl}" controls></video>`
+        : '';
+    if (!player) return '';
+    return `<div class="card-media">${player}${item.caption ? `<div class="media-caption">${item.caption}</div>` : ''}</div>`;
+  }
+  if (item.type === 'document') {
+    return `<div class="card-media"><a class="card-doc-link" href="${item.dataUrl}" download="${item.fileName || 'document'}"><span class="doc-icon">📄</span> ${item.caption || item.fileName || 'Download document'}</a></div>`;
+  }
+  if (item.type === 'chart') {
+    return `<div class="card-media">
+      <canvas id="chartCanvas-${uid}" width="600" height="320"></canvas>
+      ${item.caption ? `<div class="media-caption">${item.caption}</div>` : ''}
+    </div>`;
+  }
+  return '';
+}
+
+// Draws any chart-type items whose canvases were just inserted into the DOM
+// under the given uid prefix (e.g. "3-0", "3-1" for solution 3's items).
+function drawGalleryCharts(items, uidPrefix) {
+  items.forEach((item, itemIdx) => {
+    if (item.type !== 'chart') return;
+    const canvas = document.getElementById(`chartCanvas-${uidPrefix}-${itemIdx}`);
+    if (canvas) drawChart(canvas, item.chartType, item.labels, item.values);
+  });
+}
+
+// Compact preview used on the grid card itself: first item, plus a count
+// badge if there's more than one so visitors know there's a gallery to open.
+function renderCardMediaPreview(s, solutionIndex) {
+  if (!s.gallery || s.gallery.length === 0) return '';
+  const first = s.gallery[0];
+  const markup = renderGalleryItemMarkup(first, `${solutionIndex}-0`);
+  if (!markup) return '';
+  const extra = s.gallery.length > 1
+    ? `<div class="gallery-count-badge">+${s.gallery.length - 1} more</div>` : '';
+  return `<div style="position:relative">${markup}${extra}</div>`;
+}
+
+function buildSolutions() {
+  const grid = document.getElementById('solutionsGrid');
+  grid.innerHTML = '';
+  solutionsData.forEach((s, i) => {
+    grid.innerHTML += `
+      <div class="solution-card" onclick="openSolutionDetail(${i})" tabindex="0" role="button" aria-label="View details for ${s.title.replace(/"/g, '')}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSolutionDetail(${i})}">
+        <div class="card-icon">${s.icon}</div>
+        <h4>${s.title}</h4>
+        <p>${s.desc}</p>
+        ${renderCardMediaPreview(s, i)}
+        <span class="card-tag">${s.tag}</span>
+      </div>
+    `;
+  });
+
+  // Charts need their canvas to exist in the DOM before drawing.
+  // Wrapped per-item: a chart rendering failure must never stop the rest
+  // of the grid (or whatever called buildSolutions, like Save Solution) from working.
+  solutionsData.forEach((s, i) => {
+    try {
+      if (s.gallery && s.gallery[0]) drawGalleryCharts([s.gallery[0]], `${i}`);
+    } catch (err) {
+      console.warn(`Chart preview ${i} failed to render:`, err);
+    }
+  });
+}
+
+// ─── Simple vanilla-canvas chart renderer (bar / line / pie) ───
+function drawChart(canvas, type, labels, values) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) { console.warn('Canvas 2D context unavailable — skipping chart render.'); return; }
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2a724e';
+  const textLight = '#6b6a66';
+  if (!values.length) return;
+  const max = Math.max(...values, 1);
+
+  if (type === 'bar') {
+    const padding = 40, chartH = h - padding * 2, barGap = 14;
+    const barW = (w - padding * 2 - barGap * (values.length - 1)) / values.length;
+    values.forEach((v, i) => {
+      const barH = (v / max) * chartH;
+      const x = padding + i * (barW + barGap);
+      const y = h - padding - barH;
+      ctx.fillStyle = accent;
+      ctx.fillRect(x, y, barW, barH);
+      ctx.fillStyle = textLight;
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(labels[i] ?? ''), x + barW / 2, h - padding + 16);
+      ctx.fillText(String(v), x + barW / 2, y - 6);
+    });
+  } else if (type === 'line') {
+    const padding = 40, chartW = w - padding * 2, chartH = h - padding * 2;
+    const stepX = values.length > 1 ? chartW / (values.length - 1) : 0;
+    ctx.beginPath();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2.5;
+    values.forEach((v, i) => {
+      const x = padding + i * stepX;
+      const y = h - padding - (v / max) * chartH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    values.forEach((v, i) => {
+      const x = padding + i * stepX;
+      const y = h - padding - (v / max) * chartH;
+      ctx.beginPath();
+      ctx.fillStyle = accent;
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = textLight;
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(labels[i] ?? ''), x, h - padding + 18);
+    });
+  } else if (type === 'pie') {
+    const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 40;
+    const total = values.reduce((a, b) => a + b, 0) || 1;
+    let start = -Math.PI / 2;
+    const hues = [0, 0.12, 0.24, 0.36, 0.48, 0.6, 0.72, 0.84];
+    values.forEach((v, i) => {
+      const angle = (v / total) * Math.PI * 2;
+      const c = hslToRgb((0.42 + hues[i % hues.length] * 0.3) % 1, 0.45, 0.42);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, start + angle);
+      ctx.closePath();
+      ctx.fillStyle = `rgb(${c.r},${c.g},${c.b})`;
+      ctx.fill();
+      start += angle;
+    });
+    ctx.fillStyle = textLight;
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    let legendY = 20;
+    values.forEach((v, i) => {
+      const c = hslToRgb((0.42 + hues[i % hues.length] * 0.3) % 1, 0.45, 0.42);
+      ctx.fillStyle = `rgb(${c.r},${c.g},${c.b})`;
+      ctx.fillRect(10, legendY - 8, 10, 10);
+      ctx.fillStyle = textLight;
+      ctx.fillText(`${labels[i] ?? ''} (${v})`, 26, legendY);
+      legendY += 16;
+    });
+  }
+}
+
+// ═══════════════════════════════════
+//  SOLUTION DETAIL MODAL
+//  Lets a visitor click any "Solutions We Design" card to view its full
+//  description, full-size media, and a relevant place to explore further.
+// ═══════════════════════════════════
+function detailLinkForSolution(s) {
+  // Route each card to the most relevant place a visitor can go next,
+  // beyond the gallery items themselves (which have their own controls).
+  const tag = (s.tag || '').toLowerCase();
+  if (tag.includes('video')) {
+    return { href: 'https://youtube.com/@globalchallengesandsolutions', label: 'Watch more on YouTube' };
+  }
+  if (tag.includes('social')) {
+    return { href: 'https://instagram.com/globalchallengesandsolutions', label: 'Follow on Instagram' };
+  }
+  if (tag.includes('education')) {
+    return { href: 'mailto:globalchallengesandsolutions@gmail.com?subject=Educational%20Resources', label: 'Request Resources' };
+  }
+  return { href: 'mailto:globalchallengesandsolutions@gmail.com?subject=' + encodeURIComponent(s.title), label: 'Get in Touch' };
+}
+
+function openSolutionDetail(index) {
+  const s = solutionsData[index];
+  if (!s) return;
+
+  document.getElementById('detailIcon').textContent = s.icon;
+  document.getElementById('detailTitle').textContent = s.title;
+  document.getElementById('detailDesc').textContent = s.desc;
+
+  const mediaEl = document.getElementById('detailMedia');
+  const gallery = s.gallery || [];
+  if (gallery.length === 0) {
+    mediaEl.innerHTML = '';
+  } else {
+    mediaEl.innerHTML = `<div class="detail-gallery">${
+      gallery.map((item, itemIdx) => renderGalleryItemMarkup(item, `detail-${index}-${itemIdx}`)).join('')
+    }</div>`;
+    // Draw any chart items now that their canvases exist in the DOM.
+    // Wrapped per-item so one bad chart can't block the rest of the modal.
+    gallery.forEach((item, itemIdx) => {
+      if (item.type !== 'chart') return;
+      try {
+        const canvas = document.getElementById(`chartCanvas-detail-${index}-${itemIdx}`);
+        if (canvas) drawChart(canvas, item.chartType, item.labels, item.values);
+      } catch (err) {
+        console.warn(`Detail chart ${itemIdx} failed to render:`, err);
+      }
+    });
+  }
+
+  const link = detailLinkForSolution(s);
+  const actions = document.getElementById('detailActions');
+  actions.innerHTML = `
+    <a class="solution-detail-link" href="${link.href}" target="_blank" rel="noopener">
+      ${link.label}
+    </a>
+  `;
+
+  const overlay = document.getElementById('solutionDetailOverlay');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('open'), 10);
+}
+
+function closeSolutionDetail() {
+  const o = document.getElementById('solutionDetailOverlay');
+  o.classList.remove('open');
+  setTimeout(() => o.style.display = 'none', 350);
+}
+
+// ═══════════════════════════════════
+//  ADMIN PANEL
+// ═══════════════════════════════════
+function closeAdmin() {
+  const overlay = document.getElementById('adminOverlay');
+  overlay.classList.remove('open');
+  setTimeout(() => overlay.style.display = 'none', 400);
+}
+function openInfo() {
+  const o = document.getElementById('infoOverlay');
+  o.style.display = 'flex';
+  setTimeout(() => o.classList.add('open'), 10);
+}
+function closeInfo() {
+  const o = document.getElementById('infoOverlay');
+  o.classList.remove('open');
+  setTimeout(() => o.style.display = 'none', 400);
+}
+
+function switchTab(tab, evt) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+  if (evt && evt.target) evt.target.classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+function buildProjectList() {
+  const list = document.getElementById('projectList');
+  list.innerHTML = '';
+  projectsData.forEach((p, i) => {
+    const sphereLabel = p.sphere ? SPHERE_LABELS[p.sphere] : null;
+    list.innerHTML += `
+      <div class="item-row">
+        <div class="item-info">
+          <h5>${p.title}</h5>
+          <span>${p.category} — ${p.stat1.value} ${p.stat1.label}${sphereLabel ? ' · ' + sphereLabel : ''}</span>
+        </div>
+        <div class="item-actions">
+          <button class="mini-btn" onclick="editProject(${i})" title="Edit">✎</button>
+          <button class="mini-btn delete" onclick="deleteProject(${i})" title="Delete">✕</button>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('statProjects').textContent = projectsData.length;
+}
+
+function buildSolutionsList() {
+  const list = document.getElementById('solutionsList');
+  list.innerHTML = '';
+  solutionsData.forEach((s, i) => {
+    const count = (s.gallery || []).length;
+    const mediaLabel = count > 0 ? ` · 📎 ${count} item${count > 1 ? 's' : ''}` : '';
+    list.innerHTML += `
+      <div class="item-row">
+        <div class="item-info">
+          <h5>${s.icon} ${s.title}</h5>
+          <span>${s.tag}${mediaLabel}</span>
+        </div>
+        <div class="item-actions">
+          <button class="mini-btn" onclick="editSolution(${i})" title="Edit">✎</button>
+          <button class="mini-btn delete" onclick="deleteSolution(${i})" title="Delete">✕</button>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('statSolutions').textContent = solutionsData.length;
+}
+
+function showAddProject() {
+  const chips = document.getElementById('projResources');
+  if (chips && !chips.children.length) renderResourceChips('projResources', []);
+  document.getElementById('addProjectForm').style.display = 'block';
+}
+function hideAddProject() {
+  document.getElementById('addProjectForm').style.display = 'none';
+  resetProjectForm();
+}
+
+function resetProjectForm() {
+  ['projTitle','projDesc','projStatLabel','projStatValue'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('projSphere').value = '';
+  renderResourceChips('projResources', []);
+  const saveBtn = document.getElementById('projSaveBtn');
+  saveBtn.textContent = 'Save Project';
+  saveBtn.onclick = addProject;
+}
+
+const categoryColors = {
+  Climate: [0x2a7fff, 0x0055cc, 0x1a4f99], Water: [0x00b4d8, 0x0077b6, 0x023e8a],
+  Health: [0xe63946, 0xd62828, 0xa4133c], Education: [0xf77f00, 0xe36414, 0xd4a574],
+  Poverty: [0x7209b7, 0x560bad, 0x3a0ca3], Biodiversity: [0x2d6a4f, 0x40916c, 0x1b4332],
+  Energy: [0xffd60a, 0xfca311, 0xe76f51], Peace: [0x48cae4, 0x00b4d8, 0x0096c7]
+};
+
+function addProject() {
+  const title = document.getElementById('projTitle').value.trim();
+  const category = document.getElementById('projCategory').value;
+  const sphere = document.getElementById('projSphere').value;
+  const desc = document.getElementById('projDesc').value.trim();
+  const statLabel = document.getElementById('projStatLabel').value.trim();
+  const statValue = document.getElementById('projStatValue').value.trim();
+
+  if (!title || !desc) { showToast('Please fill in title and description'); return; }
+
+  projectsData.push({
+    category,
+    sphere: sphere || undefined,
+    resources: getSelectedResources('projResources'),
+    title,
+    text: desc,
+    stat1: { value: statValue || "N/A", label: statLabel || "Impact" },
+    stat2: { value: "—", label: "Ongoing" },
+    colors: categoryColors[category] || [0x2a7fff, 0x0055cc, 0x1a4f99],
+  });
+  persistProjectsData();
+
+  buildBook();
+  buildProjectList();
+  hideAddProject();
+  showToast('Project added successfully!');
+}
+
+function deleteProject(index) {
+  if (confirm('Delete this project?')) {
+    projectsData.splice(index, 1);
+    persistProjectsData();
+    if (currentPage >= projectsData.length) currentPage = Math.max(0, projectsData.length - 1);
+    buildBook();
+    buildProjectList();
+    showToast('Project deleted');
+  }
+}
+
+function editProject(index) {
+  const p = projectsData[index];
+  document.getElementById('projTitle').value = p.title;
+  document.getElementById('projCategory').value = p.category;
+  document.getElementById('projSphere').value = p.sphere || '';
+  renderResourceChips('projResources', p.resources || []);
+  document.getElementById('projDesc').value = p.text;
+  document.getElementById('projStatLabel').value = p.stat1.label;
+  document.getElementById('projStatValue').value = p.stat1.value;
+  showAddProject();
+
+  const saveBtn = document.getElementById('projSaveBtn');
+  saveBtn.textContent = 'Update Project';
+  saveBtn.onclick = function() {
+    projectsData[index].title = document.getElementById('projTitle').value.trim();
+    projectsData[index].category = document.getElementById('projCategory').value;
+    projectsData[index].sphere = document.getElementById('projSphere').value || undefined;
+    projectsData[index].resources = getSelectedResources('projResources');
+    projectsData[index].text = document.getElementById('projDesc').value.trim();
+    projectsData[index].stat1.label = document.getElementById('projStatLabel').value.trim();
+    projectsData[index].stat1.value = document.getElementById('projStatValue').value.trim();
+    projectsData[index].colors = categoryColors[projectsData[index].category] || projectsData[index].colors;
+    persistProjectsData();
+    buildBook();
+    buildProjectList();
+    hideAddProject();
+    showToast('Project updated!');
+  };
+}
+
+function deleteSolution(index) {
+  if (confirm('Delete this solution card?')) {
+    solutionsData.splice(index, 1);
+    persistSolutionsData();
+    buildSolutions();
+    buildSolutionsList();
+    showToast('Solution removed');
+  }
+}
+
+// ═══════════════════════════════════
+//  SOLUTIONS — GALLERY-AWARE ADD/EDIT
+//  Admins can attach any number of photos, videos, documents, and charts
+//  to a solution card. Items are staged in stagedGalleryItems while the
+//  form is open, then saved onto the solution as its `gallery` array.
+// ═══════════════════════════════════
+const MAX_MEDIA_BYTES = 2 * 1024 * 1024; // 2MB cap per uploaded file
+let stagedGalleryItems = []; // items queued for the solution currently being added/edited
+let tempFileData = {}; // holds the most recently picked file per media type, keyed by 'photo'|'video'|'document'
+
+function showAddSolution() {
+  document.getElementById('addSolutionForm').style.display = 'block';
+}
+function hideAddSolution() {
+  document.getElementById('addSolutionForm').style.display = 'none';
+  resetSolutionForm();
+}
+function resetSolutionForm() {
+  ['solIcon','solTag','solTitle','solDesc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  clearMediaTypeFields();
+  stagedGalleryItems = [];
+  tempFileData = {};
+  renderStagedGalleryList();
+  setMediaType('photo');
+  setVideoMode('embed');
+  const saveBtn = document.getElementById('solSaveBtn');
+  saveBtn.textContent = 'Save Solution';
+  saveBtn.onclick = addSolution;
+}
+
+function clearMediaTypeFields() {
+  ['solVideoUrl','chartLabels','chartValues','photoCaption','videoCaption','docCaption','chartCaption'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('chartType').value = 'bar';
+  ['photoDrop','videoDrop','docDrop'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('has-file');
+    el.textContent = el.id === 'photoDrop' ? 'Click to choose a photo (JPG/PNG, max 2MB)'
+      : el.id === 'videoDrop' ? 'Click to choose a video file (max 2MB — short clips only)'
+      : 'Click to choose a document (PDF, max 2MB)';
+  });
+}
+
+function setMediaType(type) {
+  document.querySelectorAll('.media-type-tabs .media-type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.media === type);
+  });
+  document.querySelectorAll('.media-fields').forEach(f => f.classList.remove('active'));
+  const target = document.getElementById(`media-${type}`);
+  if (target) target.classList.add('active');
+}
+
+function setVideoMode(mode) {
+  document.querySelectorAll('.video-mode-toggle .media-type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.vmode === mode);
+  });
+  document.getElementById('videoModeEmbed').style.display = mode === 'embed' ? 'block' : 'none';
+  document.getElementById('videoModeFile').style.display = mode === 'file' ? 'block' : 'none';
+}
+
+function getActiveMediaType() {
+  const activeBtn = document.querySelector('.media-type-tabs .media-type-btn.active');
+  return activeBtn ? activeBtn.dataset.media : 'photo';
+}
+function getActiveVideoMode() {
+  const activeBtn = document.querySelector('.video-mode-toggle .media-type-btn.active');
+  return activeBtn ? activeBtn.dataset.vmode : 'embed';
+}
+
+function handleMediaFile(evt, kind) {
+  const file = evt.target.files[0];
+  if (!file) return;
+
+  if (file.size > MAX_MEDIA_BYTES) {
+    showToast(`File too large — max ${(MAX_MEDIA_BYTES / (1024*1024)).toFixed(0)}MB`);
+    evt.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result;
+    tempFileData[kind] = { dataUrl, name: file.name };
+    // Picking a file is the whole "upload" action — add it to the gallery
+    // immediately rather than waiting on a separate click the admin might miss.
+    addStagedGalleryItem();
+    evt.target.value = ''; // allow re-selecting the same filename later
+  };
+  reader.onerror = () => showToast('Could not read that file — try a different one');
+  reader.readAsDataURL(file);
+}
+
+function convertToEmbedUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url.trim());
+    if (u.hostname.includes('youtube.com')) {
+      const id = u.searchParams.get('v');
+      if (id) return `https://www.youtube.com/embed/${id}`;
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'embed' && parts[1]) return `https://www.youtube.com/embed/${parts[1]}`;
+    }
+    if (u.hostname.includes('youtu.be')) {
+      const id = u.pathname.replace('/', '');
+      if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+    if (u.hostname.includes('vimeo.com')) {
+      const id = u.pathname.split('/').filter(Boolean).pop();
+      if (id) return `https://player.vimeo.com/video/${id}`;
+    }
+  } catch { /* not a valid URL, fall through */ }
+  return '';
+}
+
+// Builds one gallery item from whichever media-type tab is currently active,
+// validates it, and — if valid — pushes it onto the staged list.
+function addStagedGalleryItem() {
+  const type = getActiveMediaType();
+  let item = null;
+
+  if (type === 'photo') {
+    const caption = document.getElementById('photoCaption').value.trim();
+    if (!tempFileData.photo) { showToast('Choose a photo first'); return; }
+    item = { type: 'photo', dataUrl: tempFileData.photo.dataUrl, name: tempFileData.photo.name, caption };
+  } else if (type === 'video') {
+    const caption = document.getElementById('videoCaption').value.trim();
+    const mode = getActiveVideoMode();
+    if (mode === 'embed') {
+      const url = document.getElementById('solVideoUrl').value.trim();
+      if (!url) { showToast('Enter a YouTube or Vimeo URL'); return; }
+      const embedUrl = convertToEmbedUrl(url);
+      if (!embedUrl) { showToast('Could not recognize that video URL — use a YouTube or Vimeo link'); return; }
+      item = { type: 'video', mode: 'embed', embedUrl, caption };
+    } else {
+      if (!tempFileData.video) { showToast('Choose a video file first'); return; }
+      item = { type: 'video', mode: 'file', dataUrl: tempFileData.video.dataUrl, name: tempFileData.video.name, caption };
+    }
+  } else if (type === 'document') {
+    const caption = document.getElementById('docCaption').value.trim();
+    if (!tempFileData.document) { showToast('Choose a document first'); return; }
+    item = { type: 'document', dataUrl: tempFileData.document.dataUrl, fileName: tempFileData.document.name, caption };
+  } else if (type === 'chart') {
+    const caption = document.getElementById('chartCaption').value.trim();
+    const chartType = document.getElementById('chartType').value;
+    const labels = document.getElementById('chartLabels').value.split(',').map(s => s.trim()).filter(Boolean);
+    const values = document.getElementById('chartValues').value.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+    if (!labels.length || !values.length || labels.length !== values.length) {
+      showToast('Chart needs matching labels and numeric values');
+      return;
+    }
+    item = { type: 'chart', chartType, labels, values, caption };
+  }
+
+  if (!item) return;
+  stagedGalleryItems.push(item);
+  renderStagedGalleryList();
+
+  // Clear just this type's inputs so the admin can add another item of the same kind
+  if (type === 'photo') { document.getElementById('photoCaption').value = ''; delete tempFileData.photo;
+    const d = document.getElementById('photoDrop'); d.classList.remove('has-file'); d.textContent = 'Click to choose a photo (JPG/PNG, max 2MB)'; }
+  if (type === 'video') { document.getElementById('videoCaption').value = ''; document.getElementById('solVideoUrl').value = ''; delete tempFileData.video;
+    const d = document.getElementById('videoDrop'); d.classList.remove('has-file'); d.textContent = 'Click to choose a video file (max 2MB — short clips only)'; }
+  if (type === 'document') { document.getElementById('docCaption').value = ''; delete tempFileData.document;
+    const d = document.getElementById('docDrop'); d.classList.remove('has-file'); d.textContent = 'Click to choose a document (PDF, max 2MB)'; }
+  if (type === 'chart') { document.getElementById('chartCaption').value = ''; document.getElementById('chartLabels').value = ''; document.getElementById('chartValues').value = ''; }
+
+  showToast('Added to gallery');
+}
+
+function removeStagedItem(idx) {
+  stagedGalleryItems.splice(idx, 1);
+  renderStagedGalleryList();
+}
+
+const mediaTypeIcons = { photo: '🖼️', video: '🎬', document: '📄', chart: '📊' };
+
+function renderStagedGalleryList() {
+  const list = document.getElementById('stagedGalleryList');
+  if (stagedGalleryItems.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:14px">No media added yet — build a gallery below.</div>`;
+    return;
+  }
+  list.innerHTML = stagedGalleryItems.map((item, i) => `
+    <div class="item-row">
+      <div class="item-info">
+        <h5>${mediaTypeIcons[item.type] || '📎'} ${item.caption || item.name || item.fileName || (item.type === 'video' ? 'Embedded video' : item.type === 'chart' ? `${item.chartType} chart` : item.type)}</h5>
+        <span>${item.type}</span>
+      </div>
+      <div class="item-actions">
+        <button class="mini-btn delete" onclick="removeStagedItem(${i})" title="Remove">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addSolution() {
+  const icon = document.getElementById('solIcon').value.trim() || '✨';
+  const title = document.getElementById('solTitle').value.trim();
+  const desc = document.getElementById('solDesc').value.trim();
+  const tag = document.getElementById('solTag').value.trim() || 'General';
+
+  if (!title || !desc) { showToast('Please fill in a title and description'); return; }
+
+  solutionsData.push({ icon, title, desc, tag, gallery: [...stagedGalleryItems] });
+  persistSolutionsData();
+  buildSolutions();
+  buildSolutionsList();
+  hideAddSolution();
+  showToast('Solution added!');
+}
+
+function editSolution(index) {
+  const s = solutionsData[index];
+  showAddSolution();
+  document.getElementById('solIcon').value = s.icon;
+  document.getElementById('solTag').value = s.tag;
+  document.getElementById('solTitle').value = s.title;
+  document.getElementById('solDesc').value = s.desc;
+
+  stagedGalleryItems = (s.gallery || []).map(item => ({ ...item }));
+  tempFileData = {};
+  renderStagedGalleryList();
+  setMediaType('photo');
+  setVideoMode('embed');
+
+  const saveBtn = document.getElementById('solSaveBtn');
+  saveBtn.textContent = 'Update Solution';
+  saveBtn.onclick = function() {
+    const icon = document.getElementById('solIcon').value.trim() || '✨';
+    const title = document.getElementById('solTitle').value.trim();
+    const desc = document.getElementById('solDesc').value.trim();
+    const tag = document.getElementById('solTag').value.trim() || 'General';
+    if (!title || !desc) { showToast('Please fill in a title and description'); return; }
+
+    solutionsData[index] = { icon, title, desc, tag, gallery: [...stagedGalleryItems] };
+    persistSolutionsData();
+    buildSolutions();
+    buildSolutionsList();
+    hideAddSolution();
+    showToast('Solution updated!');
+  };
+}
+
+// ═══════════════════════════════════
+//  SITE CONFIG PERSISTENCE
+//  Hero copy, brand name, accent color, and social links — saved together
+//  so editing them in Content/Settings actually sticks after a refresh.
+// ═══════════════════════════════════
+const SITE_CONFIG_STORAGE_KEY = 'gcs_site_config_v1';
+const defaultSiteConfig = {
+  heroTag: 'Identifying World Problems · Creating Solutions',
+  heroTitle: 'Design That Speaks for the Planet',
+  heroSub: "We use graphic design, storytelling, and creative media to identify critical global challenges and craft actionable solutions for a better tomorrow.",
+  brandName: 'Global Challenges & Solutions',
+  accentColor: '#2a724e',
+  ytHandle: '@globalchallengesandsolutions',
+  igHandle: '@globalchallengesandsolutions',
+  contactEmail: 'globalchallengesandsolutions@gmail.com',
+};
+
+function loadSiteConfig() {
+  try {
+    const raw = localStorage.getItem(SITE_CONFIG_STORAGE_KEY);
+    if (!raw) return { ...defaultSiteConfig };
+    return { ...defaultSiteConfig, ...JSON.parse(raw) };
+  } catch (err) {
+    console.warn('Could not load saved site settings — using defaults:', err);
+    return { ...defaultSiteConfig };
+  }
+}
+
+function persistSiteConfig(config) {
+  try {
+    localStorage.setItem(SITE_CONFIG_STORAGE_KEY, JSON.stringify(config));
+  } catch (err) {
+    console.warn('Could not save site settings to this browser:', err);
+    showToast('Saved for now, but storage is full — this change won\'t survive a refresh.');
+  }
+}
+
+// Applies a config object to the live page — used both on load and right
+// after Save, so the two never drift apart.
+function applySiteConfig(config) {
+  const hero = document.getElementById('heroSection');
+  hero.querySelector('.hero-tag').textContent = config.heroTag;
+  hero.querySelector('h2').innerHTML = config.heroTitle
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+  hero.querySelector('p').textContent = config.heroSub;
+
+  const words = config.brandName.split(' ');
+  const firstWord = words.shift() || '';
+  document.querySelector('.nav-left h1').innerHTML =
+    firstWord.replace(/&/g, '&amp;') + (words.length ? '<br>' + words.join(' ').replace(/&/g, '&amp;') : '');
+
+  document.documentElement.style.setProperty('--accent', config.accentColor);
+
+  document.querySelectorAll('.contact-link[href*="youtube.com"]').forEach(a => {
+    if (config.ytHandle) a.href = `https://youtube.com/${config.ytHandle.replace(/^@/, '@')}`;
+  });
+  document.querySelectorAll('.contact-link[href*="instagram.com"]').forEach(a => {
+    if (config.igHandle) a.href = `https://instagram.com/${config.igHandle.replace(/^@/, '')}`;
+  });
+  document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
+    if (config.contactEmail) a.href = `mailto:${config.contactEmail}`;
+  });
+
+  // Keep the admin form inputs in sync with whatever's actually live,
+  // so opening Content/Settings shows the real current values, not stale defaults.
+  const setIfPresent = (id, value) => { const el = document.getElementById(id); if (el) el.value = value; };
+  setIfPresent('heroTagInput', config.heroTag);
+  setIfPresent('heroTitleInput', config.heroTitle);
+  setIfPresent('heroSubInput', config.heroSub);
+  setIfPresent('brandName', config.brandName);
+  setIfPresent('accentColor', config.accentColor);
+  setIfPresent('ytHandle', config.ytHandle);
+  setIfPresent('igHandle', config.igHandle);
+  setIfPresent('contactEmail', config.contactEmail);
+}
+
+function updateHeroContent() {
+  const config = loadSiteConfig();
+  config.heroTag = document.getElementById('heroTagInput').value;
+  config.heroTitle = document.getElementById('heroTitleInput').value;
+  config.heroSub = document.getElementById('heroSubInput').value;
+  persistSiteConfig(config);
+  applySiteConfig(config);
+  showToast('Hero content updated!');
+}
+
+function saveSettings() {
+  const config = loadSiteConfig();
+  config.brandName = document.getElementById('brandName').value.trim() || defaultSiteConfig.brandName;
+  config.accentColor = document.getElementById('accentColor').value;
+  config.ytHandle = document.getElementById('ytHandle').value.trim();
+  config.igHandle = document.getElementById('igHandle').value.trim();
+  config.contactEmail = document.getElementById('contactEmail').value.trim();
+  const newPassword = document.getElementById('newAdminPassword').value;
+
+  persistSiteConfig(config);
+  applySiteConfig(config);
+
+  if (newPassword) {
+    localStorage.setItem('admin_password', newPassword);
+    document.getElementById('newAdminPassword').value = '';
+    showToast('Settings saved — password updated');
+  } else {
+    showToast('Settings saved!');
+  }
+}
+
+function resetSettings() {
+  localStorage.removeItem(SITE_CONFIG_STORAGE_KEY);
+  const config = { ...defaultSiteConfig };
+  applySiteConfig(config);
+  document.getElementById('newAdminPassword').value = '';
+  showToast('Settings reset to defaults');
+}
+
+// ═══════════════════════════════════
+//  ADMIN LOGIN
+//  NOTE: This is a client-side-only gate for convenience while editing
+//  content in the browser. It is NOT real security — anyone can read the
+//  password check in this file's source or open dev tools and run
+//  localStorage.setItem('admin_authed','1') to bypass it. Do not rely on
+//  this to protect anything sensitive. A genuine login requires a backend
+//  that verifies credentials server-side.
+// ═══════════════════════════════════
+function openAdmin() {
+  const authed = sessionStorage.getItem('admin_authed') === '1';
+  if (!authed) {
+    document.getElementById('adminLoginOverlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('adminLoginOverlay').classList.add('open'), 10);
+    setTimeout(() => document.getElementById('adminPasswordInput').focus(), 50);
+    return;
+  }
+  const overlay = document.getElementById('adminOverlay');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('open'), 10);
+  buildProjectList();
+  buildSolutionsList();
+  buildAdminSubmissionsList();
+}
+
+function closeAdminLogin() {
+  const o = document.getElementById('adminLoginOverlay');
+  o.classList.remove('open');
+  setTimeout(() => {
+    o.style.display = 'none';
+    document.getElementById('adminPasswordInput').value = '';
+  }, 300);
+}
+
+function attemptAdminLogin() {
+  const pwd = document.getElementById('adminPasswordInput').value;
+  const correct = localStorage.getItem('admin_password') || 'admin123';
+  if (pwd === correct) {
+    // Session-only: the admin panel re-locks itself once the tab is closed.
+    sessionStorage.setItem('admin_authed', '1');
+    closeAdminLogin();
+    showToast('Welcome, admin');
+    openAdmin();
+  } else {
+    showToast('Incorrect password');
+  }
+}
+
+// ═══════════════════════════════════
+//  USER ACCOUNTS
+//  NOTE: like the admin login, this is a browser-only demo account system.
+//  Everything lives in this browser's localStorage — there is no server,
+//  no real password hashing, and no way for a user to access their account
+//  from another device. It's meant for prototyping the experience, not
+//  for real user data.
+// ═══════════════════════════════════
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('gcs_users') || '{}'); }
+  catch { return {}; }
+}
+function saveUsers(users) { localStorage.setItem('gcs_users', JSON.stringify(users)); }
+
+function getCurrentUserEmail() { return sessionStorage.getItem('gcs_current_user') || null; }
+
+function getCurrentUser() {
+  const email = getCurrentUserEmail();
+  if (!email) return null;
+  const users = getUsers();
+  return users[email] ? { email, ...users[email] } : null;
+}
+
+function toggleMobileMenu() {
+  const panel = document.getElementById('mobileMenuPanel');
+  const btn = document.getElementById('mobileMenuBtn');
+  const isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenuPanel').classList.remove('open');
+  const btn = document.getElementById('mobileMenuBtn');
+  btn.classList.remove('open');
+  btn.setAttribute('aria-expanded', 'false');
+}
+
+function handleUserNavClick() {
+  getCurrentUser() ? openUserPanel() : openUserAuth();
+}
+
+function renderUserNav() {
+  const btn = document.getElementById('userNavBtn');
+  const user = getCurrentUser();
+  if (user) {
+    const initial = (user.name || user.email).trim().charAt(0);
+    btn.innerHTML = `<span class="user-avatar">${initial}</span> ${user.name.split(' ')[0]}`;
+  } else {
+    btn.textContent = 'Sign In';
+  }
+}
+
+// ── Auth modal ──
+function openUserAuth() {
+  document.getElementById('userAuthOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('userAuthOverlay').classList.add('open'), 10);
+}
+function closeUserAuth() {
+  const o = document.getElementById('userAuthOverlay');
+  o.classList.remove('open');
+  setTimeout(() => { o.style.display = 'none'; }, 300);
+}
+function switchAuthTab(tab, evt) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-tab-content').forEach(t => t.classList.remove('active'));
+  if (evt && evt.target) evt.target.classList.add('active');
+  document.getElementById(`auth-${tab}`).classList.add('active');
+}
+
+function attemptSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+  const password = document.getElementById('signupPassword').value;
+
+  if (!name || !email || !password) { showToast('Fill in all fields to sign up'); return; }
+  if (!email.includes('@')) { showToast('Enter a valid email'); return; }
+
+  const users = getUsers();
+  if (users[email]) { showToast('An account with that email already exists'); return; }
+
+  users[email] = { name, password, joined: new Date().toISOString() };
+  saveUsers(users);
+  sessionStorage.setItem('gcs_current_user', email);
+
+  ['signupName','signupEmail','signupPassword'].forEach(id => document.getElementById(id).value = '');
+  closeUserAuth();
+  renderUserNav();
+  showToast(`Welcome, ${name}!`);
+  refreshFavoriteButtons();
+}
+
+function attemptLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const users = getUsers();
+
+  if (!users[email] || users[email].password !== password) {
+    showToast('Incorrect email or password');
+    return;
+  }
+
+  sessionStorage.setItem('gcs_current_user', email);
+  ['loginEmail','loginPassword'].forEach(id => document.getElementById(id).value = '');
+  closeUserAuth();
+  renderUserNav();
+  showToast(`Welcome back, ${users[email].name.split(' ')[0]}!`);
+  refreshFavoriteButtons();
+}
+
+function logOutUser() {
+  sessionStorage.removeItem('gcs_current_user');
+  closeUserPanel();
+  renderUserNav();
+  refreshFavoriteButtons();
+  showToast('Logged out');
+}
+
+// ── User panel ──
+function openUserPanel() {
+  const user = getCurrentUser();
+  if (!user) { openUserAuth(); return; }
+
+  document.getElementById('userPanelGreeting').textContent = `Hi, ${user.name.split(' ')[0]}`;
+  document.getElementById('profileName').value = user.name;
+  document.getElementById('profileEmail').value = user.email;
+
+  switchUserTab('explore');
+  renderResourceChips('subResources', []);
+  buildMyResources();
+  buildFavoritesList();
+  buildMySubmissionsList();
+
+  const overlay = document.getElementById('userPanelOverlay');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('open'), 10);
+}
+function closeUserPanel() {
+  const o = document.getElementById('userPanelOverlay');
+  o.classList.remove('open');
+  setTimeout(() => o.style.display = 'none', 400);
+}
+function switchUserTab(tab) {
+  document.querySelectorAll('#userPanelOverlay .admin-tab').forEach(t => t.classList.toggle('active', t.dataset.usertab === tab));
+  document.querySelectorAll('#userPanelOverlay .admin-tab-content').forEach(t => t.classList.remove('active'));
+  const content = document.getElementById(`usertab-${tab}`);
+  if (content) content.classList.add('active');
+  if (tab === 'explore') buildSphereExplorer();
+  if (tab === 'ideas') buildIdeaBoard();
+  if (tab === 'resources') buildMyResources();
+  if (tab === 'favorites') buildFavoritesList();
+  if (tab === 'mysubs') buildMySubmissionsList();
+}
+
+// ── Idea board ──
+// A shared view of every idea people have submitted, with backing votes.
+// Rejected ideas are hidden; an idea still under review is shown so its
+// author (and everyone else) can see it's in the queue.
+function countVotes(idea) { return (idea.votes || []).length; }
+
+function buildIdeaBoard() {
+  const list = document.getElementById('ideaBoardList');
+  if (!list) return;
+
+  const sphereFilter = document.getElementById('ideaFilterSphere').value;
+  const resourceFilter = document.getElementById('ideaFilterResource').value;
+  const sort = document.getElementById('ideaSort').value;
+  const user = getCurrentUser();
+
+  let ideas = getSubmissions().filter(s => s.status !== 'rejected');
+  if (sphereFilter) ideas = ideas.filter(s => s.sphere === sphereFilter);
+  if (resourceFilter) ideas = ideas.filter(s => (s.resources || []).includes(resourceFilter));
+
+  ideas.sort((a, b) => sort === 'votes'
+    ? countVotes(b) - countVotes(a) || new Date(b.submittedAt) - new Date(a.submittedAt)
+    : new Date(b.submittedAt) - new Date(a.submittedAt));
+
+  if (ideas.length === 0) {
+    const filtered = sphereFilter || resourceFilter;
+    list.innerHTML = `<div class="empty-state">${filtered
+      ? 'No ideas match those filters yet — try widening them, or add the first one.'
+      : "No ideas on the board yet. Submit the first one and it'll appear here."}</div>`;
+    return;
+  }
+
+  list.innerHTML = ideas.map(s => {
+    const voted = user && (s.votes || []).includes(user.email);
+    const mine = user && s.submittedBy === user.email;
+    return `
+    <div class="idea-card">
+      <button class="idea-vote${voted ? ' voted' : ''}" onclick="toggleIdeaVote('${s.id}')"
+              aria-pressed="${voted ? 'true' : 'false'}" title="${voted ? 'Remove your backing' : 'Back this idea'}">
+        <span class="vote-arrow">▲</span>
+        <span class="vote-count">${countVotes(s)}</span>
+      </button>
+      <div class="idea-body">
+        <h5>${s.title} ${s.status === 'pending' ? '<span class="status-pill pending">in review</span>' : '<span class="status-pill approved">in portfolio</span>'}</h5>
+        <div class="idea-meta">${s.category}${s.sphere ? ' · ' + (SPHERE_LABELS[s.sphere] || s.sphere) : ''} · by ${mine ? 'you' : s.submittedByName} · ${new Date(s.submittedAt).toLocaleDateString()}</div>
+        <p>${s.desc}</p>
+        <div>${resourceTagsMarkup(s.resources)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleIdeaVote(id) {
+  const user = getCurrentUser();
+  if (!user) { showToast('Sign in to back an idea'); openUserAuth(); return; }
+
+  const subs = getSubmissions();
+  const idea = subs.find(s => s.id === id);
+  if (!idea) return;
+
+  idea.votes = idea.votes || [];
+  if (idea.votes.includes(user.email)) {
+    idea.votes = idea.votes.filter(e => e !== user.email);
+    showToast('Backing removed');
+  } else {
+    idea.votes.push(user.email);
+    showToast('Idea backed');
+  }
+  saveSubmissions(subs);
+  buildIdeaBoard();
+}
+
+// ── A user's own declared resources ──
+function getUserResources(email) {
+  try { return JSON.parse(localStorage.getItem(`gcs_resources_${email}`) || '[]'); }
+  catch { return []; }
+}
+function buildMyResources() {
+  const user = getCurrentUser();
+  renderResourceChips('myResources', user ? getUserResources(user.email) : []);
+  const legend = document.getElementById('resourceLegend');
+  if (legend) legend.innerHTML = resourceLegendMarkup();
+}
+function saveMyResources() {
+  const user = getCurrentUser();
+  if (!user) { showToast('Sign in to save your resources'); openUserAuth(); return; }
+  const selected = getSelectedResources('myResources');
+  try {
+    localStorage.setItem(`gcs_resources_${user.email}`, JSON.stringify(selected));
+    showToast(selected.length ? 'Resources saved' : 'Resources cleared');
+  } catch (err) {
+    console.warn('Could not save resources:', err);
+    showToast('Saved for now, but storage is full — this won\'t survive a refresh.');
+  }
+}
+
+function saveProfile() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const newName = document.getElementById('profileName').value.trim();
+  if (!newName) { showToast('Name cannot be empty'); return; }
+  const users = getUsers();
+  users[user.email].name = newName;
+  saveUsers(users);
+  renderUserNav();
+  document.getElementById('userPanelGreeting').textContent = `Hi, ${newName.split(' ')[0]}`;
+  showToast('Profile updated');
+}
+
+// ── Sphere explorer ──
+// Lets a visitor pick which sphere of life or society they want to focus
+// on, then browse matching portfolio challenges and jump into submitting
+// an idea already tagged for that sphere.
+let selectedSphere = null;
+
+function buildSphereExplorer() {
+  const grid = document.getElementById('sphereGrid');
+  if (!grid) return;
+  grid.innerHTML = SPHERES.map(s => `
+    <div class="sphere-card${selectedSphere === s.id ? ' active' : ''}" onclick="selectSphere('${s.id}')" tabindex="0" role="button"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectSphere('${s.id}')}">
+      <div class="sphere-icon">${s.icon}</div>
+      <h5>${s.label}</h5>
+    </div>
+  `).join('');
+  renderSphereResults();
+}
+
+function selectSphere(id) {
+  selectedSphere = (selectedSphere === id) ? null : id;
+  buildSphereExplorer();
+}
+
+function renderSphereResults() {
+  const box = document.getElementById('sphereResults');
+  if (!box) return;
+  if (!selectedSphere) { box.innerHTML = ''; return; }
+
+  const sphere = SPHERES.find(s => s.id === selectedSphere);
+  const matches = projectsData
+    .map((p, idx) => ({ ...p, idx }))
+    .filter(p => p.sphere === selectedSphere);
+
+  let html = `<div class="sphere-detail-box">
+    <strong>${sphere.icon} ${sphere.label}</strong>
+    <p>${sphere.desc}</p>
+  </div>`;
+
+  if (matches.length === 0) {
+    html += `<div class="empty-state">No challenges tagged for this sphere yet in the portfolio. Be the first to suggest one!</div>`;
+  } else {
+    html += `<div class="item-list">${matches.map(p => `
+      <div class="item-row">
+        <div class="item-info">
+          <h5>${p.title}</h5>
+          <span>${p.category}</span>
+          <div>${resourceTagsMarkup(p.resources)}</div>
+        </div>
+        <div class="item-actions">
+          <button class="mini-btn" onclick="viewProjectFromExplorer(${p.idx})" title="View in portfolio">→</button>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  html += `<div class="admin-actions">
+    <button class="admin-btn secondary" onclick="goToSubmitWithSphere('${selectedSphere}')">Submit an idea for this sphere</button>
+  </div>`;
+
+  box.innerHTML = html;
+}
+
+function goToSubmitWithSphere(sphereId) {
+  switchUserTab('submit');
+  const sel = document.getElementById('subSphere');
+  if (sel) sel.value = sphereId;
+}
+
+function viewProjectFromExplorer(idx) {
+  closeUserPanel();
+  goToPage(idx);
+  const section = document.getElementById('bookSection');
+  if (section) section.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Favorites ──
+function getFavorites(email) {
+  try { return JSON.parse(localStorage.getItem(`gcs_favorites_${email}`) || '[]'); }
+  catch { return []; }
+}
+function saveFavorites(email, favs) {
+  localStorage.setItem(`gcs_favorites_${email}`, JSON.stringify(favs));
+}
+
+function toggleFavorite(title) {
+  const user = getCurrentUser();
+  if (!user) { showToast('Sign in to save challenges'); openUserAuth(); return; }
+  let favs = getFavorites(user.email);
+  if (favs.includes(title)) {
+    favs = favs.filter(t => t !== title);
+    showToast('Removed from favorites');
+  } else {
+    favs.push(title);
+    showToast('Saved to favorites');
+  }
+  saveFavorites(user.email, favs);
+  refreshFavoriteButtons();
+}
+
+function refreshFavoriteButtons() {
+  const user = getCurrentUser();
+  const favs = user ? getFavorites(user.email) : [];
+  projectsData.forEach((proj, i) => {
+    const btn = document.getElementById(`favBtn${i}`);
+    if (btn) btn.classList.toggle('active', favs.includes(proj.title));
+  });
+}
+
+function buildFavoritesList() {
+  const user = getCurrentUser();
+  const list = document.getElementById('favoritesList');
+  if (!list) return;
+  if (!user) { list.innerHTML = ''; return; }
+  const favs = getFavorites(user.email);
+  const favProjects = projectsData.filter(p => favs.includes(p.title));
+
+  if (favProjects.length === 0) {
+    list.innerHTML = `<div class="empty-state">No saved challenges yet. Tap the ♥ on any page of the portfolio to save it here.</div>`;
+    return;
+  }
+  list.innerHTML = favProjects.map(p => `
+    <div class="item-row">
+      <div class="item-info">
+        <h5>${p.title}</h5>
+        <span>${p.category}</span>
+      </div>
+      <div class="item-actions">
+        <button class="mini-btn delete" onclick="toggleFavorite('${p.title.replace(/'/g, "\\'")}'); buildFavoritesList();" title="Remove">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Idea submissions ──
+function getSubmissions() {
+  try { return JSON.parse(localStorage.getItem('gcs_submissions') || '[]'); }
+  catch { return []; }
+}
+function saveSubmissions(subs) { localStorage.setItem('gcs_submissions', JSON.stringify(subs)); }
+
+function submitIdea() {
+  const user = getCurrentUser();
+  if (!user) { showToast('Sign in to submit an idea'); openUserAuth(); return; }
+
+  const sphere = document.getElementById('subSphere').value;
+  const title = document.getElementById('subTitle').value.trim();
+  const category = document.getElementById('subCategory').value;
+  const desc = document.getElementById('subDesc').value.trim();
+  const statLabel = document.getElementById('subStatLabel').value.trim();
+  const statValue = document.getElementById('subStatValue').value.trim();
+  const resources = getSelectedResources('subResources');
+
+  if (!title || !desc) { showToast('Please fill in a title and description'); return; }
+
+  const subs = getSubmissions();
+  subs.push({
+    id: Date.now().toString(36),
+    sphere: sphere || undefined,
+    resources,
+    title, category, desc, statLabel, statValue,
+    submittedBy: user.email,
+    submittedByName: user.name,
+    submittedAt: new Date().toISOString(),
+    votes: [],
+    status: 'pending',
+  });
+  saveSubmissions(subs);
+
+  ['subTitle','subDesc','subStatLabel','subStatValue'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('subSphere').value = '';
+  renderResourceChips('subResources', []);
+  showToast('Idea submitted for review!');
+  buildMySubmissionsList();
+  buildIdeaBoard();
+  refreshPendingBadge();
+}
+
+function buildMySubmissionsList() {
+  const user = getCurrentUser();
+  const list = document.getElementById('mySubmissionsList');
+  if (!list) return;
+  if (!user) { list.innerHTML = ''; return; }
+  const mine = getSubmissions().filter(s => s.submittedBy === user.email).reverse();
+
+  if (mine.length === 0) {
+    list.innerHTML = `<div class="empty-state">You haven't submitted any ideas yet.</div>`;
+    return;
+  }
+  list.innerHTML = mine.map(s => `
+    <div class="item-row">
+      <div class="item-info">
+        <h5>${s.title}</h5>
+        <span>${s.category}${s.sphere ? ' · ' + (SPHERE_LABELS[s.sphere] || s.sphere) : ''} · ${new Date(s.submittedAt).toLocaleDateString()} · ▲ ${countVotes(s)}</span>
+        <div>${resourceTagsMarkup(s.resources)}</div>
+      </div>
+      <span class="status-pill ${s.status}">${s.status}</span>
+    </div>
+  `).join('');
+}
+
+// ── Admin review of submissions ──
+function refreshPendingBadge() {
+  const pending = getSubmissions().filter(s => s.status === 'pending').length;
+  const badge = document.getElementById('pendingBadge');
+  if (badge) badge.textContent = pending > 0 ? `(${pending})` : '';
+}
+
+function buildAdminSubmissionsList() {
+  const list = document.getElementById('adminSubmissionsList');
+  const subs = getSubmissions().slice().reverse();
+
+  if (subs.length === 0) {
+    list.innerHTML = `<div class="empty-state">No user submissions yet.</div>`;
+    refreshPendingBadge();
+    return;
+  }
+
+  list.innerHTML = subs.map(s => `
+    <div class="item-row" style="align-items:flex-start">
+      <div class="item-info">
+        <h5>${s.title} <span class="status-pill ${s.status}" style="margin-left:6px">${s.status}</span></h5>
+        <span>${s.category}${s.sphere ? ' · ' + (SPHERE_LABELS[s.sphere] || s.sphere) : ''} · submitted by ${s.submittedByName} · ${new Date(s.submittedAt).toLocaleDateString()} · ▲ ${countVotes(s)} backing</span>
+        <p style="font-size:12px;color:var(--text-light);margin-top:6px;line-height:1.5">${s.desc}</p>
+        <div>${resourceTagsMarkup(s.resources)}</div>
+      </div>
+      <div class="item-actions">
+        ${s.status === 'pending' ? `
+          <button class="mini-btn" onclick="approveSubmission('${s.id}')" title="Approve">✓</button>
+          <button class="mini-btn delete" onclick="rejectSubmission('${s.id}')" title="Reject">✕</button>
+        ` : `<button class="mini-btn delete" onclick="deleteSubmissionRecord('${s.id}')" title="Remove record">✕</button>`}
+      </div>
+    </div>
+  `).join('');
+  refreshPendingBadge();
+}
+
+function approveSubmission(id) {
+  const subs = getSubmissions();
+  const sub = subs.find(s => s.id === id);
+  if (!sub) return;
+  sub.status = 'approved';
+  saveSubmissions(subs);
+
+  projectsData.push({
+    category: sub.category,
+    sphere: sub.sphere || undefined,
+    resources: sub.resources || [],
+    title: sub.title,
+    text: sub.desc,
+    stat1: { value: sub.statValue || 'N/A', label: sub.statLabel || 'Impact' },
+    stat2: { value: '—', label: 'Ongoing' },
+    colors: categoryColors[sub.category] || [0x2a7fff, 0x0055cc, 0x1a4f99],
+  });
+  persistProjectsData();
+
+  buildBook();
+  buildProjectList();
+  buildAdminSubmissionsList();
+  showToast('Submission approved and added to the portfolio');
+}
+
+function rejectSubmission(id) {
+  const subs = getSubmissions();
+  const sub = subs.find(s => s.id === id);
+  if (!sub) return;
+  sub.status = 'rejected';
+  saveSubmissions(subs);
+  buildAdminSubmissionsList();
+  showToast('Submission rejected');
+}
+
+function deleteSubmissionRecord(id) {
+  let subs = getSubmissions();
+  subs = subs.filter(s => s.id !== id);
+  saveSubmissions(subs);
+  buildAdminSubmissionsList();
+}
+
+// ═══════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════
+//  SCROLL ANIMATIONS
+// ═══════════════════════════════════
+function initScrollAnimations() {
+  if (typeof IntersectionObserver === 'undefined') return; // very old browser — skip the reveal effect
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.solution-card, .section-header, .contact-inner').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+}
+
+// ═══════════════════════════════════
+//  INIT
+// ═══════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  // Loader
+  const fill = document.getElementById('loaderFill');
+  let progress = 0;
+  const loadInterval = setInterval(() => {
+    progress += Math.random() * 15 + 5;
+    if (progress >= 100) {
+      progress = 100;
+      fill.style.width = '100%';
+      clearInterval(loadInterval);
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+      }, 400);
+    } else {
+      fill.style.width = progress + '%';
+    }
+  }, 150);
+
+  try { applySiteConfig(loadSiteConfig()); } catch (err) { console.warn('Site settings failed to apply:', err); }
+  try { initThree(); } catch (err) { console.warn('Background effect failed to start:', err); }
+  try { buildBook(); } catch (err) { console.warn('Book portfolio failed to render:', err); }
+  try { buildSolutions(); } catch (err) { console.warn('Solutions grid failed to render:', err); }
+  try { renderUserNav(); } catch (err) { console.warn('User nav failed to render:', err); }
+  try { refreshPendingBadge(); } catch (err) { console.warn('Pending badge failed to render:', err); }
+
+  setTimeout(initScrollAnimations, 1000);
+
+  // Book drag interaction
+  const bookContainer = document.getElementById('bookContainer');
+  let isDragging = false, startX = 0;
+  bookContainer.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX; });
+  bookContainer.addEventListener('touchstart', e => { isDragging = true; startX = e.touches[0].clientX; });
+
+  const endDrag = (endX) => {
+    if (!isDragging) return;
+    isDragging = false;
+    const diff = endX - startX;
+    if (diff < -50) nextPage();
+    else if (diff > 50) prevPage();
+  };
+  document.addEventListener('mouseup', e => endDrag(e.clientX));
+  document.addEventListener('touchend', e => endDrag(e.changedTouches[0].clientX));
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NIGHT EARTH THEME (styles)
+     ═══════════════════════════════════════════════════════════ -->
+<style id="gcs-theme">
+  :root {
+    --night: #06110d;
+    --night-2: #0b1d16;
+    --mint: #7be0ae;
+    --gold: #f3c969;
+    --coral: #ff7a59;
+    --ice: #e9f5ee;
+    --ice-dim: rgba(233,245,238,.66);
+    --glass: rgba(255,255,255,.055);
+    --glass-line: rgba(255,255,255,.12);
+  }
+
+  body {
+    color: var(--ice);
+    background:
+      radial-gradient(900px 600px at 12% 8%, rgba(42,114,78,.38), transparent 60%),
+      radial-gradient(800px 600px at 92% 28%, rgba(243,201,105,.10), transparent 60%),
+      radial-gradient(900px 700px at 70% 95%, rgba(13,132,168,.22), transparent 60%),
+      linear-gradient(180deg, var(--night) 0%, var(--night-2) 100%);
+    background-attachment: fixed;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection { background: var(--mint); color: var(--night); }
+
+  #loader { background: var(--night); }
+  #loader h2 {
+    background: linear-gradient(90deg, var(--mint), var(--gold), var(--mint));
+    background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
+    color: transparent; animation: gcsShine 3s linear infinite; text-align: center; padding: 0 20px;
+  }
+  .loader-fill { background: linear-gradient(90deg, var(--mint), var(--gold)); }
+  @keyframes gcsShine { to { background-position: -200% center; } }
+
+  nav { background: linear-gradient(180deg, rgba(6,17,13,.85), rgba(6,17,13,0)); }
+  .nav-left h1, .nav-center a, .nav-btn, .user-nav-btn { color: var(--ice); }
+  .nav-left span { color: var(--mint); }
+  .nav-center a:hover, .nav-btn:hover, .user-nav-btn:hover { color: var(--gold); }
+  .nav-right .nav-btn:last-child {
+    border: 1px solid var(--glass-line); padding: 6px 14px; border-radius: 20px; background: var(--glass);
+  }
+  .arrow-btn { color: var(--ice-dim); }
+  .arrow-btn:hover { color: var(--gold); }
+  /* the mobile slide-out menu is white, so its links must stay dark */
+  .mobile-menu-panel a, .mobile-menu-panel button, .mobile-menu-panel .nav-btn { color: #1c1c1c; }
+
+  #gcsProgress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 10001;
+    background: linear-gradient(90deg, var(--mint), var(--gold), var(--coral));
+    box-shadow: 0 0 12px rgba(123,224,174,.7);
+  }
+  #gcsGlow {
+    position: fixed; width: 420px; height: 420px; left: 0; top: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(circle, rgba(123,224,174,.13), transparent 65%);
+    transform: translate(-50%, -50%); transition: opacity .4s; opacity: 0;
+  }
+
+  .hero { overflow: hidden; }
+  .hero > *:not(#gcsGlobe) { position: relative; z-index: 2; }
+  .hero .scroll-hint { position: absolute; }
+  #gcsGlobe {
+    position: absolute; z-index: 1; pointer-events: none;
+    width: min(92vw, 780px); aspect-ratio: 1; top: 50%; left: 50%;
+    transform: translate(-50%, -48%); opacity: .55;
+    -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 72%);
+            mask-image: radial-gradient(circle, #000 52%, transparent 72%);
+  }
+  .hero-tag {
+    color: var(--mint); display: inline-flex; align-items: center; gap: 10px;
+    padding: 7px 16px; border: 1px solid var(--glass-line); border-radius: 30px; background: var(--glass);
+    backdrop-filter: blur(8px); margin-bottom: 20px;
+  }
+  .hero-tag::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--coral);
+    box-shadow: 0 0 0 0 rgba(255,122,89,.7); animation: gcsPing 1.8s infinite;
+  }
+  @keyframes gcsPing { 70% { box-shadow: 0 0 0 10px rgba(255,122,89,0); } 100% { box-shadow: 0 0 0 0 rgba(255,122,89,0); } }
+  .hero h2 {
+    font-size: clamp(42px, 7.4vw, 92px); letter-spacing: -1.5px; font-weight: 600;
+    background: linear-gradient(100deg, #ffffff 10%, var(--mint) 45%, var(--gold) 80%);
+    background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: gcsShine 8s linear infinite;
+  }
+  .hero p { color: var(--ice-dim); font-size: 17px; }
+  .scroll-hint { color: var(--ice-dim); }
+  .scroll-line { background: linear-gradient(var(--mint), transparent); }
+
+  .gcs-cta { display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap; justify-content: center; }
+  .gcs-btn {
+    padding: 14px 28px; border-radius: 40px; font-size: 14px; font-weight: 600; letter-spacing: .4px;
+    text-decoration: none; cursor: pointer; border: 1px solid transparent; font-family: inherit;
+    transition: transform .3s, box-shadow .3s, background .3s;
+  }
+  .gcs-btn.primary { background: linear-gradient(135deg, var(--mint), #3fb985); color: var(--night); box-shadow: 0 10px 30px rgba(123,224,174,.28); }
+  .gcs-btn.ghost { background: var(--glass); color: var(--ice); border-color: var(--glass-line); backdrop-filter: blur(8px); }
+  .gcs-btn:hover { transform: translateY(-3px); }
+  .gcs-btn.primary:hover { box-shadow: 0 14px 40px rgba(123,224,174,.45); }
+
+  .gcs-ticker {
+    position: relative; z-index: 2; overflow: hidden; padding: 18px 0; margin: 0;
+    border-block: 1px solid var(--glass-line); background: rgba(255,255,255,.03); backdrop-filter: blur(6px);
+    pointer-events: all;
+  }
+  .gcs-ticker-track { display: flex; gap: 56px; width: max-content; animation: gcsMarquee 40s linear infinite; }
+  .gcs-ticker:hover .gcs-ticker-track { animation-play-state: paused; }
+  .gcs-ticker span { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--ice-dim); white-space: nowrap; }
+  .gcs-ticker b { font-family: 'Playfair Display', serif; font-size: 22px; letter-spacing: 0; color: var(--gold); margin-right: 10px; font-weight: 600; }
+  @keyframes gcsMarquee { to { transform: translateX(-50%); } }
+
+  .book-title { color: var(--mint); }
+  .book-container::before {
+    content: ''; position: absolute; inset: -6% -4%; z-index: -1; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(243,201,105,.18), transparent 70%); filter: blur(20px);
+  }
+  .book-spread { box-shadow: 0 40px 100px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08); border-radius: 8px; }
+  .page-category { color: #1f6a47; }
+  .book-nav-btn { background: var(--glass); color: var(--ice); border-color: var(--glass-line); }
+  .book-nav-btn:hover { background: var(--mint); color: var(--night); border-color: var(--mint); }
+  .book-counter { color: var(--ice-dim); }
+
+  .section-header h3, .contact-inner h3 { color: var(--ice); letter-spacing: -.5px; }
+  .section-header p, .contact-inner p { color: var(--ice-dim); }
+  .solution-card {
+    background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(14px);
+    box-shadow: 0 10px 40px rgba(0,0,0,.25); isolation: isolate;
+    --mx: 50%; --my: 0%;
+  }
+  .solution-card::after {
+    content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .35s;
+    background: radial-gradient(320px circle at var(--mx) var(--my), rgba(123,224,174,.18), transparent 60%);
+  }
+  .solution-card:hover::after { opacity: 1; }
+  .solution-card::before { background: linear-gradient(90deg, var(--mint), var(--gold)); }
+  .solution-card:hover { translate: 0 -8px; border-color: rgba(123,224,174,.45); box-shadow: 0 24px 60px rgba(0,0,0,.4); }
+  .solution-card { transition: opacity .6s ease, transform .6s ease, translate .35s, border-color .35s, box-shadow .35s !important; }
+  .solution-card h4 { color: var(--ice); }
+  .solution-card p { color: var(--ice-dim); }
+  .card-icon { background: linear-gradient(135deg, rgba(123,224,174,.25), rgba(243,201,105,.2)); border: 1px solid var(--glass-line); }
+  .card-tag { color: var(--gold); background: rgba(243,201,105,.1); }
+
+  .contact-inner {
+    padding: 56px 40px; border-radius: 28px; border: 1px solid var(--glass-line);
+    background: linear-gradient(145deg, rgba(123,224,174,.10), rgba(243,201,105,.05)); backdrop-filter: blur(12px);
+  }
+  .contact-link { background: var(--glass); color: var(--ice); border-color: var(--glass-line); }
+  .contact-link:hover { background: var(--mint); color: var(--night); border-color: var(--mint); }
+  footer { color: var(--ice-dim); border-top-color: var(--glass-line); }
+
+  @media (max-width: 768px) {
+    #gcsGlow { display: none; }
+    .contact-inner { padding: 40px 22px; }
+    .gcs-ticker-track { gap: 36px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gcs-ticker-track, .hero h2, #loader h2, .hero-tag::before { animation: none; }
+  }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NIGHT EARTH THEME (behavior)
+     ═══════════════════════════════════════════════════════════ -->
+<script id="gcs-theme-js">
+(function () {
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Scroll progress bar + cursor glow
+  const bar = document.createElement('div'); bar.id = 'gcsProgress'; document.body.appendChild(bar);
+  const glow = document.createElement('div'); glow.id = 'gcsGlow'; document.body.appendChild(glow);
+  addEventListener('scroll', () => {
+    const h = document.documentElement.scrollHeight - innerHeight;
+    bar.style.width = (h > 0 ? (scrollY / h) * 100 : 0) + '%';
+  }, { passive: true });
+  addEventListener('mousemove', e => {
+    glow.style.opacity = 1; glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px';
+  });
+
+  // Hero: call-to-action buttons + rotating dotted globe
+  const hero = document.getElementById('heroSection');
+  if (hero) {
+    const cta = document.createElement('div'); cta.className = 'gcs-cta';
+    cta.innerHTML =
+      '<a class="gcs-btn primary" href="#bookSection">Explore the Challenges</a>' +
+      '<a class="gcs-btn ghost" href="#solutionsSection">See Our Solutions</a>';
+    hero.querySelector('p').after(cta);
+    cta.querySelectorAll('a').forEach(a => a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    }));
+
+    const cv = document.createElement('canvas'); cv.id = 'gcsGlobe';
+    cv.width = cv.height = 900; hero.prepend(cv);
+    const ctx = cv.getContext('2d');
+    if (ctx) {
+      // Fibonacci sphere of dots; a few glow as "challenge hotspots"
+      const N = 900, pts = [], golden = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < N; i++) {
+        const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), th = golden * i;
+        pts.push({ x: Math.cos(th) * r, y, z: Math.sin(th) * r, hot: i % 97 === 0 });
+      }
+      let rot = 0;
+      const R = 330, C = 450;
+      (function draw() {
+        ctx.clearRect(0, 0, 900, 900);
+        rot += reduce ? 0 : 0.0035;
+        const cr = Math.cos(rot), sr = Math.sin(rot), tilt = 0.38, ct = Math.cos(tilt), st = Math.sin(tilt);
+        const t = performance.now() / 1000;
+        for (const p of pts) {
+          const x = p.x * cr - p.z * sr, z = p.x * sr + p.z * cr, y = p.y;
+          const y2 = y * ct - z * st, z2 = y * st + z * ct;
+          if (z2 < -0.15) continue; // back side hidden
+          const k = (z2 + 1) / 2, sx = C + x * R, sy = C + y2 * R;
+          if (p.hot) {
+            const pulse = 1 + Math.sin(t * 2.4 + p.x * 5) * .35;
+            ctx.fillStyle = 'rgba(255,122,89,' + (0.25 + k * .2) + ')';
+            ctx.beginPath(); ctx.arc(sx, sy, 11 * pulse, 0, 6.283); ctx.fill();
+            ctx.fillStyle = '#ff7a59'; ctx.beginPath(); ctx.arc(sx, sy, 3.6, 0, 6.283); ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(123,224,174,' + (0.12 + k * 0.7) + ')';
+            ctx.fillRect(sx, sy, 1.2 + k * 1.6, 1.2 + k * 1.6);
+          }
+        }
+        requestAnimationFrame(draw);
+      })();
+    }
+
+    // Stats ticker under the hero
+    const facts = [
+      ['2.2B', 'lack safe drinking water'], ['10M ha', 'forest lost every year'],
+      ['258M', 'children out of school'], ['700M', 'live in extreme poverty'],
+      ['1.1°C', 'global warming so far'], ['1', 'planet — let\u2019s design for it']
+    ];
+    const row = facts.map(f => '<span><b>' + f[0] + '</b>' + f[1] + '</span>').join('');
+    const tick = document.createElement('div'); tick.className = 'gcs-ticker';
+    tick.setAttribute('aria-hidden', 'true');
+    tick.innerHTML = '<div class="gcs-ticker-track">' + row + row + '</div>';
+    hero.after(tick);
+  }
+
+  // Card spotlight follows the mouse (event delegation survives re-renders)
+  const grid = document.getElementById('solutionsGrid');
+  if (grid) grid.addEventListener('mousemove', e => {
+    const card = e.target.closest('.solution-card'); if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FORGOT PASSWORD + PASSWORD CRITERIA
+     ═══════════════════════════════════════════════════════════ -->
+<style id="gcs-forgot-css">
+  .auth-link { color: var(--accent); text-decoration: none; font-weight: 500; }
+  .auth-link:hover { text-decoration: underline; }
+  .pw-hint { font-size: 11px; line-height: 1.7; margin-top: 6px; color: var(--text-light); }
+  .pw-hint span.ok { color: #1f8f5a; }
+  .pw-hint span.bad { color: #a0a0a0; }
+  .reset-code-box {
+    padding: 12px 14px; margin-bottom: 16px; border-radius: 8px; font-size: 12px; line-height: 1.6;
+    background: #fff8e1; border: 1px solid #f3dd9b; color: #6b5200;
+  }
+  .reset-code-box strong { display: block; font-size: 24px; letter-spacing: 6px; color: #1c1c1c; margin: 4px 0; }
+</style>
+
+<script id="gcs-forgot-js">
+(function () {
+  // ── Password criteria: 8+ characters, at least one letter and one number ──
+  const RULES = [
+    { test: p => p.length >= 8,      label: 'At least 8 characters' },
+    { test: p => /[A-Za-z]/.test(p), label: 'One letter' },
+    { test: p => /\d/.test(p),       label: 'One number' },
+  ];
+  function passwordProblems(p) { return RULES.filter(r => !r.test(p)).map(r => r.label); }
+
+  window.updatePwHint = function (inputId, hintId) {
+    const p = document.getElementById(inputId).value;
+    document.getElementById(hintId).innerHTML = p
+      ? RULES.map(r => '<span class="' + (r.test(p) ? 'ok' : 'bad') + '">' + (r.test(p) ? '✓ ' : '○ ') + r.label + '</span>').join(' &nbsp; ')
+      : 'Use 8+ characters with at least one letter and one number.';
+  };
+  ['signupPwHint', 'resetPwHint'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'Use 8+ characters with at least one letter and one number.';
+  });
+
+  // Enforce the criteria on new sign-ups (existing accounts can still log in as before)
+  const baseSignup = window.attemptSignup;
+  window.attemptSignup = function () {
+    const p = document.getElementById('signupPassword').value;
+    if (p && passwordProblems(p).length) {
+      showToast('Password needs: ' + passwordProblems(p).join(', ').toLowerCase());
+      return;
+    }
+    return baseSignup.apply(this, arguments);
+  };
+
+  // ── Forgot password flow ──
+  // Demo only: there is no email server, so the code is shown on screen.
+  // With a real backend, email the code and never display it in the page.
+  let reset = null; // { email, code, expires, attempts }
+  const tabsRow = () => document.querySelector('#userAuthOverlay .auth-tabs');
+
+  window.showForgotPassword = function () {
+    tabsRow().style.display = 'none';
+    document.getElementById('userAuthTitle').textContent = 'Reset password';
+    switchAuthTab('forgot');
+    document.getElementById('forgotStep1').style.display = 'block';
+    document.getElementById('forgotStep2').style.display = 'none';
+    const typed = document.getElementById('loginEmail').value.trim();
+    if (typed) document.getElementById('forgotEmail').value = typed;
+    setTimeout(() => document.getElementById('forgotEmail').focus(), 50);
+  };
+
+  window.backToLogin = function () {
+    reset = null;
+    tabsRow().style.display = '';
+    document.getElementById('userAuthTitle').textContent = 'Welcome';
+    ['forgotEmail', 'resetCodeInput', 'resetNewPassword', 'resetConfirmPassword'].forEach(id => document.getElementById(id).value = '');
+    switchAuthTab('login');
+    const tabs = document.querySelectorAll('#userAuthOverlay .auth-tab');
+    tabs.forEach((t, i) => t.classList.toggle('active', i === 0));
+  };
+
+  window.sendResetCode = function () {
+    const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+    if (!email || !email.includes('@')) { showToast('Enter a valid email'); return; }
+    if (!getUsers()[email]) { showToast('No account found with that email'); return; }
+
+    const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0');
+    reset = { email, code, expires: Date.now() + 10 * 60 * 1000, attempts: 0 };
+
+    document.getElementById('resetCodeBox').innerHTML =
+      'Demo mode — no email server is connected, so your reset code is shown here:' +
+      '<strong>' + code + '</strong>It expires in 10 minutes.';
+    document.getElementById('forgotStep1').style.display = 'none';
+    document.getElementById('forgotStep2').style.display = 'block';
+    setTimeout(() => document.getElementById('resetCodeInput').focus(), 50);
+  };
+
+  window.confirmPasswordReset = function () {
+    if (!reset) { showToast('Request a reset code first'); return; }
+    if (Date.now() > reset.expires) { reset = null; showToast('That code expired — request a new one'); showForgotPassword(); return; }
+
+    const code = document.getElementById('resetCodeInput').value.trim();
+    const pw = document.getElementById('resetNewPassword').value;
+    const pw2 = document.getElementById('resetConfirmPassword').value;
+
+    if (code !== reset.code) {
+      reset.attempts++;
+      if (reset.attempts >= 5) { reset = null; showToast('Too many wrong codes — request a new one'); showForgotPassword(); }
+      else showToast('Incorrect code (' + (5 - reset.attempts) + ' tries left)');
+      return;
+    }
+    const problems = passwordProblems(pw);
+    if (problems.length) { showToast('Password needs: ' + problems.join(', ').toLowerCase()); return; }
+    if (pw !== pw2) { showToast('Passwords do not match'); return; }
+
+    const users = getUsers();
+    if (!users[reset.email]) { showToast('Account no longer exists'); return; }
+    users[reset.email].password = pw;
+    saveUsers(users);
+
+    const email = reset.email;
+    backToLogin();
+    document.getElementById('loginEmail').value = email;
+    showToast('Password updated — log in with your new password');
+  };
+
+  // Always reopen the sign-in window on the normal Log In view
+  const baseClose = window.closeUserAuth;
+  window.closeUserAuth = function () {
+    baseClose.apply(this, arguments);
+    setTimeout(() => { if (reset || tabsRow().style.display === 'none') backToLogin(); }, 350);
+  };
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIGN-IN BUTTON → MY PANEL DROPDOWN
+     ═══════════════════════════════════════════════════════════ -->
+<style id="gcs-usermenu-css">
+  #gcsUserMenu {
+    position: fixed; z-index: 1001; min-width: 220px; padding: 8px;
+    background: rgba(11,29,22,.92); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .2s, transform .2s, visibility .2s;
+  }
+  #gcsUserMenu.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  #gcsUserMenu .um-head { padding: 10px 12px 12px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 6px; }
+  #gcsUserMenu .um-head strong { display: block; font-size: 14px; color: #e9f5ee; }
+  #gcsUserMenu .um-head span { font-size: 11px; color: rgba(233,245,238,.6); }
+  #gcsUserMenu button {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    padding: 10px 12px; border: none; background: none; border-radius: 8px;
+    color: #e9f5ee; font: inherit; font-size: 13px; cursor: pointer; transition: background .2s;
+  }
+  #gcsUserMenu button:hover, #gcsUserMenu button:focus-visible { background: rgba(123,224,174,.16); }
+  #gcsUserMenu button.primary { background: #7be0ae; color: #06110d; font-weight: 600; margin-bottom: 4px; }
+  #gcsUserMenu button.primary:hover { background: #95ecc0; }
+  #gcsUserMenu hr { border: none; border-top: 1px solid rgba(255,255,255,.1); margin: 6px 0; }
+  .user-nav-btn .um-caret { font-size: 10px; opacity: .7; margin-left: 2px; }
+</style>
+
+<script id="gcs-usermenu-js">
+(function () {
+  const btn = document.getElementById('userNavBtn');
+  if (!btn) return;
+
+  const menu = document.createElement('div');
+  menu.id = 'gcsUserMenu';
+  menu.setAttribute('role', 'menu');
+  document.body.appendChild(menu);
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  function buildMenu() {
+    const u = getCurrentUser();
+    if (!u) { menu.innerHTML = ''; return; }
+    menu.innerHTML =
+      '<div class="um-head"><strong>' + esc(u.name) + '</strong><span>' + esc(u.email) + '</span></div>' +
+      '<button class="primary" data-tab="explore">📂 Open My Panel</button>' +
+      '<button data-tab="ideas">💡 Idea Board</button>' +
+      '<button data-tab="favorites">♥ Favorites</button>' +
+      '<button data-tab="submit">✏️ Submit an Idea</button>' +
+      '<button data-tab="mysubs">📋 My Submissions</button>' +
+      '<button data-tab="resources">🧰 My Resources</button>' +
+      '<button data-tab="profile">👤 Profile</button>' +
+      '<hr><button data-act="logout">↩ Log Out</button>';
+  }
+
+  function openMenu() {
+    buildMenu();
+    const r = btn.getBoundingClientRect();
+    menu.style.top = (r.bottom + 10) + 'px';
+    menu.style.right = Math.max(12, innerWidth - r.right) + 'px';
+    menu.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+  function closeMenu() {
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  menu.addEventListener('click', e => {
+    const item = e.target.closest('button');
+    if (!item) return;
+    closeMenu();
+    if (item.dataset.act === 'logout') { logOutUser(); return; }
+    openUserPanel();
+    if (item.dataset.tab && item.dataset.tab !== 'explore') switchUserTab(item.dataset.tab);
+  });
+
+  document.addEventListener('click', e => {
+    if (!menu.classList.contains('open')) return;
+    if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+  addEventListener('resize', closeMenu);
+  addEventListener('scroll', closeMenu, { passive: true });
+
+  // Sign In button: opens login when signed out, a dropdown with My Panel when signed in.
+  // On mobile the desktop button is hidden, so go straight to the panel.
+  window.handleUserNavClick = function () {
+    if (!getCurrentUser()) { openUserAuth(); return; }
+    if (btn.offsetParent === null) { openUserPanel(); return; }
+    menu.classList.contains('open') ? closeMenu() : openMenu();
+  };
+
+  // Show a small caret next to the name once signed in
+  const baseRender = window.renderUserNav;
+  window.renderUserNav = function () {
+    baseRender.apply(this, arguments);
+    if (getCurrentUser()) btn.insertAdjacentHTML('beforeend', '<span class="um-caret">▾</span>');
+    btn.setAttribute('aria-haspopup', 'menu');
+    closeMenu();
+  };
+  window.renderUserNav();
+
+  // After a successful log in / sign up, open My Panel right away
+  ['attemptLogin', 'attemptSignup'].forEach(name => {
+    const original = window[name];
+    window[name] = function () {
+      const was = getCurrentUserEmail();
+      const out = original.apply(this, arguments);
+      if (!was && getCurrentUserEmail()) setTimeout(openUserPanel, 350);
+      return out;
+    };
+  });
+})();
+</script>
+
+</body>
+</html>
